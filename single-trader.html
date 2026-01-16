@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ملف التاجر | دليل الأعمال</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&amp;family=Noto+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7277",
+                        "accent": "#d4a853",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#112021",
+                        "surface": "#ffffff",
+                        "text-main": "#1e293b",
+                    },
+                    fontFamily: {
+                        "display": ["Noto Sans Arabic", "Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Noto Sans Arabic", "Public Sans", sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main font-display min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 w-full bg-white dark:bg-background-dark border-b border-gray-200 dark:border-gray-800">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-16">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">storefront</span>
+<h1 class="text-xl font-bold tracking-tight">دليل الأعمال</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">الرئيسية</a>
+<a class="text-sm font-medium text-primary underline underline-offset-8" href="#">التجار</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">الخدمات</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">عنا</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+<input class="bg-gray-100 dark:bg-gray-800 border-none rounded-lg py-2 pr-10 pl-4 text-sm focus:ring-2 focus:ring-primary w-64" placeholder="بحث عن تاجر..." type="text"/>
+</div>
+<button class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all">تسجيل الدخول</button>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Profile Header Section -->
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 mb-8">
+<div class="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+<div class="flex flex-col md:flex-row gap-6 items-center">
+<div class="relative group">
+<div class="w-32 h-32 rounded-xl bg-gray-200 overflow-hidden border-4 border-white shadow-md">
+<img class="w-full h-full object-cover" data-alt="Professional trader profile portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAldZe4I2D60K9I6ciEzy-H9giB10nv9motSYDfb8_YvSsTo4PAatY4giH0mdjYRyssawe3_ZHIAbUukp3yvDIbd70-9mhnFx2_9ExGs-xvTkzWD5FpVodKF2LyieD2fpfAbXbEathD68cm6E5_xYe1-5PLRBdMeNaWwnpyLq_70c5Y2MxpMRBkgvKC2W3pYYP9wx4cL8olfpP7BlsWap0I98YfX4tRpjHPIG8ICv7rsBeDgRTakZouYnchx-ZwdadQZo5ukS9E1gk"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-accent text-white p-1 rounded-full border-2 border-white shadow-sm">
+<span class="material-symbols-outlined text-sm">verified</span>
+</div>
+</div>
+<div class="text-center md:text-right">
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">مجموعة الرواد التجارية</h2>
+<div class="flex flex-wrap gap-2 justify-center md:justify-start mb-3">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">قطاع التجزئة</span>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">تجارة الأغذية</span>
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">نشاط استيراد</span>
+</div>
+<p class="text-gray-500 text-sm flex items-center justify-center md:justify-start gap-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                            عضو منذ يناير ٢٠٢٣
+                        </p>
+</div>
+</div>
+<div class="flex flex-wrap gap-3 w-full md:w-auto">
+<a class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 text-text-main px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-gray-200 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">language</span>
+<span>الموقع الإلكتروني</span>
+</a>
+<a class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-opacity-90 transition-all" href="tel:+">
+<span class="material-symbols-outlined text-lg">call</span>
+<span>اتصل الآن</span>
+</a>
+<a class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-opacity-90 transition-all" href="https://wa.me/">
+<span class="material-symbols-outlined text-lg">chat</span>
+<span>واتساب</span>
+</a>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Sidebar (Right) -->
+<aside class="lg:col-span-1 space-y-6">
+<!-- Score Card -->
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 text-center">
+<p class="text-gray-500 text-sm font-medium mb-2">مستوى الثقة والتقييم</p>
+<div class="inline-flex items-center justify-center p-4 bg-accent/10 rounded-full mb-4">
+<span class="text-4xl font-black text-accent">٩.٨</span>
+<span class="text-xl text-accent/70 ml-1">/١٠</span>
+</div>
+<div class="flex justify-center gap-1 mb-2">
+<span class="material-symbols-outlined text-accent">star</span>
+<span class="material-symbols-outlined text-accent">star</span>
+<span class="material-symbols-outlined text-accent">star</span>
+<span class="material-symbols-outlined text-accent">star</span>
+<span class="material-symbols-outlined text-accent">star</span>
+</div>
+<p class="text-xs text-gray-400">بناءً على التراخيص والتقييمات الموثقة</p>
+</div>
+<!-- Business Info Card -->
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+<div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+                            معلومات الأعمال الموثقة
+                        </h3>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">description</span>
+                                السجل التجاري
+                            </span>
+<span class="text-sm font-bold">١٠١٠٥٥٦٧٨٩</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">factory</span>
+                                السجل الصناعي
+                            </span>
+<span class="text-sm font-bold">٢٠٢٠/٩٩٨</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">business_center</span>
+                                نوع الشركة
+                            </span>
+<span class="text-sm font-bold">شركة ذات مسؤولية محدودة</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm text-gray-500 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">event_available</span>
+                                تاريخ المنح
+                            </span>
+<span class="text-sm font-bold">١٥ / ٠٥ / ٢٠٢١</span>
+</div>
+</div>
+</div>
+<!-- QR Code & Social -->
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+<h3 class="font-bold text-center mb-4">مسح الرمز السريع</h3>
+<div class="flex justify-center mb-6">
+<div class="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center p-4 border border-dashed border-gray-300">
+<img class="w-full h-full opacity-80" data-alt="QR Code for trader profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8HnMOMAUpJsbgRxIeX2sdyy_mS78kVntEn4eamqn24J5MvWxuZS7U6wgToroF50f6YbcAihk29zKIhbuJSxiePe6TSwaOLIvvmxK65UDZikEIy6Fw2d_6ixtNbdpXCkoIx8MvBWt2eLPYSbberxtG69SSQBXGN-oL1Lvd48Ny1J-y6_pOKgg7mYYshj5mTHBpP8kqOagjoWGSeTG90st6g9wYNkbLBxQRnemtF_oiv8uZuY8QA0lZNeTJ_FEqDNtjtvMiHgjoDxw"/>
+</div>
+</div>
+<div class="flex justify-center gap-4 mb-6">
+<a class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">social_leaderboard</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-pink-600 hover:bg-pink-600 hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">photo_camera</span>
+</a>
+</div>
+<button class="w-full bg-primary text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all">
+<span class="material-symbols-outlined">download</span>
+                        تحميل الملف التعريفي (PDF)
+                    </button>
+</div>
+</aside>
+<!-- Main Content Area (Left) -->
+<div class="lg:col-span-2 space-y-8">
+<!-- About Section -->
+<section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+<h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                        نبذة عن التاجر
+                    </h3>
+<p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        نحن مجموعة الرواد التجارية، رائدون في قطاع تجارة الأغذية والاستيراد في المنطقة منذ أكثر من ١٥ عاماً. نلتزم بتقديم أجود المنتجات العالمية للسوق المحلي مع ضمان معايير الجودة العالمية. نمتلك شبكة توزيع واسعة تغطي كافة مناطق المملكة وفروعاً متعددة لخدمة عملائنا بشكل مباشر. رؤيتنا هي أن نكون الخيار الأول للمستهلك الباحث عن الجودة والابتكار في المنتجات الغذائية.
+                    </p>
+</section>
+<!-- Services Section -->
+<section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+                        الخدمات والمنتجات
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex items-start gap-4 p-4 rounded-lg bg-background-light dark:bg-gray-800">
+<span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+<div>
+<h4 class="font-bold text-sm">خدمات الشحن المبرد</h4>
+<p class="text-xs text-gray-500 mt-1">توفير حلول لوجستية متكاملة لنقل الأغذية.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-lg bg-background-light dark:bg-gray-800">
+<span class="material-symbols-outlined text-primary text-3xl">box_add</span>
+<div>
+<h4 class="font-bold text-sm">توريد الجملة</h4>
+<p class="text-xs text-gray-500 mt-1">عقود توريد للفنادق والمطاعم الكبرى.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-lg bg-background-light dark:bg-gray-800">
+<span class="material-symbols-outlined text-primary text-3xl">handshake</span>
+<div>
+<h4 class="font-bold text-sm">الوكالات التجارية</h4>
+<p class="text-xs text-gray-500 mt-1">تمثيل حصري لماركات عالمية متميزة.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-lg bg-background-light dark:bg-gray-800">
+<span class="material-symbols-outlined text-primary text-3xl">analytics</span>
+<div>
+<h4 class="font-bold text-sm">استشارات السوق</h4>
+<p class="text-xs text-gray-500 mt-1">تحليل احتياجات السوق الغذائي المحلي.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Gallery Section -->
+<section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">collections</span>
+                        معرض الصور
+                    </h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Warehouse facility of the trader" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQhYstDAlvwWNK94cbwmkn4X9ikxk7cKRCvbX5nFzg47AgD6S3s1Ko6RC2IW0Pfnw4u6niW-is1dtILJip7AlhWX02T9rnqZpV6nGnA6GN4HHrn960tO4sVcYKRs3tTQowsoUHGCmlZ32TPAHCqPEZ-3eIq90DaJvkIzt6UGHEFoy7TOO61XkibY_o8UU97V9RNulEfQLmleSUIESmfMuz0TVHg5qQjjOdcONitZoJ2Id9-5iq54sy037dsnpZg1MRkWXrWimzLoY"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Product display in showroom" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqCja6ovL_OUJJKeIg-wQLPiXadvEx7J47emN8_TZFuehlsdl2mowqfUYVoF959htnC2ZgdtpHnwXVRO85GhYx8mOxluLJ2Xo_12DRTAXwqDkKThEJd6uErz5mS4-1TJDyjbMlTH7jNl9NPB-dsK61xfMyVi8TTns1k4m11xmhnDSNq5le0zKPMYmaa_p4SEKHnGi7CAMhjJjLmCvZlHTF2bOy67H1DpfBXDVsrArPz2Ulwvknwd4c8v3ntLPwzYzRWHAtzUkVkjE"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Shipping trucks and logistics" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsQeMcHxC7lC3RiZCsFNnJaj8mGp_RqnGf9Y6uM4JbLAvPRAvNlbdjQCx-zx8PZDyfwsQ92Vq9ounbVXfjU0XVysSTXJCU2fRrH5pxcBwdhqPRfmUUNX2BPty2dQYvpfB_lAv9o0unu8V1h-2nM3OOocCdIpNudNChcZBbDcIiZDaYGwuJ0cIhbv2R__NU0OZuEyZebB_sVgmmhhK_PQk-UbvThSxkGsq4txh40o6YO-xJqQI7Lb05HNk1dcMCyq3050TxcAxo7T8"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Office building exterior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzb7dVymGjiow8VkPnTmAyrl3x2z9_p3WZnmwyYkHbE51w1ZSXLOzowGAbpQ1aLgNLc9Qby8X1Tjf1kiv3nd-0TXFXHNOemcaFZg9pbI-l-U9bIDB7hZ8hU37REOkgipqZSOUoNJYOhV5AyJAwYwwWVJR6kz_zdc1wS3yv-tM0tJryc0-a9vcsCkempC8Pgt6VCZwtHby4Pt_pRufnBQYpy297BpUjl4huiOL7vYe2-BnjLJnISfMCtVuQ-5MefCab3dTknnM_BJA"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer relative">
+<img class="w-full h-full object-cover" data-alt="Team working in warehouse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9WHrIwj3WH5OY03PNcLDAsV25A5VH6qFWTifTokKshlDYxmSwvEtIcwztVldtEAkiv6J9E_MxHuxRQ1yY3mMlrgGzQaNhfsNNgOO6Xa3jujFAdrM5DZBsThAS3EAYYLZSQayTidU1dqwmIVJBpyPRijv5CM4ytzJ7uWRCZjaLBShQ0foi8eN2wUHiP_YQ3vjOL4vJH2lS6Q1klEQwg_oEQX5AvkKx3ec-8_SvY6UCnCF3wHXnfLugHs7cGaHmR6mr5YqX2QlxS68"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold">+٥ صور</div>
+</div>
+</div>
+</section>
+<!-- Branches & Map Section -->
+<section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">location_on</span>
+                        الفروع والمواقع
+                    </h3>
+<div class="space-y-4 mb-6">
+<div class="p-4 border border-gray-100 dark:border-gray-800 rounded-lg hover:border-primary transition-colors cursor-pointer bg-gray-50/50">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold">الفرع الرئيسي - الرياض</h4>
+<p class="text-sm text-gray-500 mt-1">حي الملز، طريق صلاح الدين الأيوبي</p>
+<p class="text-xs text-primary mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">call</span>
+                                        ٠١١٢٢٣٣٤٤٥
+                                    </p>
+</div>
+<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold">مفتوح الآن</span>
+</div>
+</div>
+<div class="p-4 border border-gray-100 dark:border-gray-800 rounded-lg hover:border-primary transition-colors cursor-pointer">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold">فرع جدة - المنطقة الصناعية</h4>
+<p class="text-sm text-gray-500 mt-1">طريق مكة المكرمة السريع، المستودعات</p>
+<p class="text-xs text-primary mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">call</span>
+                                        ٠١٢٣٣٤٤٥٥٦
+                                    </p>
+</div>
+<span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-[10px] font-bold">مغلق</span>
+</div>
+</div>
+</div>
+<div class="w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
+<div class="w-full h-full bg-slate-200 relative flex items-center justify-center">
+<span class="material-symbols-outlined text-5xl text-gray-400">map</span>
+<div class="absolute bottom-4 left-4 bg-white p-2 rounded shadow-lg flex items-center gap-2 text-xs">
+<span class="material-symbols-outlined text-primary">my_location</span>
+                                عرض على خرائط جوجل
+                            </div>
+<img class="absolute inset-0 w-full h-full object-cover opacity-50" data-alt="Map showing branch locations" data-location="Riyadh, Saudi Arabia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPWn3zPZIKJvQ4_WwfZ0eGdpi9-uvL_k2sf0JrqlJ2FmoifP2I3tXGcV0eaAbLS_lnVQuph8XdClbmPvKUMT74KusIHa5yvgsCDwOPMaR8r60EabKXCvekI3L4Pbhn0MX2PZALA5_FE5I2d9x8fI0DImjM1RdYqep8nt1IqIF2Uo-EPZ66lieM0MMAgvK4FoNM6PTIzLXb-ifEmYIsrGQy-tPhD6OGLBm8rrSvAH8iLxqYx4V0xksMUXiWqn75CxtdpVm8Tve7eZ0"/>
+</div>
+</div>
+</section>
+<!-- Reviews Section Placeholder -->
+<section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">rate_review</span>
+                            آراء العملاء
+                        </h3>
+<button class="text-primary font-bold text-sm">أضف تقييمك</button>
+</div>
+<div class="space-y-6">
+<div class="border-b border-gray-100 dark:border-gray-800 pb-6">
+<div class="flex justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-gray-200"></div>
+<div>
+<p class="font-bold text-sm">عبدالرحمن محمد</p>
+<p class="text-[10px] text-gray-400">قبل ٢ يوم</p>
+</div>
+</div>
+<div class="flex text-accent">
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+</div>
+</div>
+<p class="text-sm text-gray-600 dark:text-gray-400">خدمة ممتازة وسرعة في التوريد، جودة المنتجات تفوق التوقعات. أنصح بالتعامل معهم.</p>
+</div>
+<div class="text-center">
+<button class="text-sm text-gray-500 font-medium hover:text-primary">عرض المزيد من التقييمات (١٢)</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-12 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<div class="flex items-center justify-center gap-2 text-primary mb-4">
+<span class="material-symbols-outlined text-2xl">storefront</span>
+<span class="text-lg font-bold">دليل الأعمال</span>
+</div>
+<p class="text-sm text-gray-500">© ٢٠٢٤ جميع الحقوق محفوظة. منصة توثيق التجار والشركات.</p>
+<div class="flex justify-center gap-6 mt-6">
+<a class="text-xs text-gray-400 hover:text-primary" href="#">سياسة الخصوصية</a>
+<a class="text-xs text-gray-400 hover:text-primary" href="#">شروط الاستخدام</a>
+<a class="text-xs text-gray-400 hover:text-primary" href="#">اتصل بنا</a>
+</div>
+</div>
+</footer>
+</body></html>
