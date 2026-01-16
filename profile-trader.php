@@ -466,6 +466,43 @@ class Profile_Trader {
                 'label' => 'الملف الشخصي',
                 'type' => 'text',
             ],
+            // About Section Structured Fields
+            'mission_statement' => [
+                'label' => 'بيان المهمة',
+                'type' => 'textarea',
+            ],
+            'vision' => [
+                'label' => 'الرؤية',
+                'type' => 'textarea',
+            ],
+            'key_statistics' => [
+                'label' => 'الإحصائيات الرئيسية',
+                'type' => 'repeater',
+                'fields' => [
+                    'stat_number' => [
+                        'label' => 'الرقم',
+                        'type' => 'text',
+                    ],
+                    'stat_label' => [
+                        'label' => 'الوصف',
+                        'type' => 'text',
+                    ],
+                    'stat_icon' => [
+                        'label' => 'الأيقونة',
+                        'type' => 'text',
+                    ],
+                ],
+            ],
+            'about_highlights' => [
+                'label' => 'النقاط المميزة',
+                'type' => 'repeater',
+                'fields' => [
+                    'highlight_text' => [
+                        'label' => 'نقطة مميزة',
+                        'type' => 'text',
+                    ],
+                ],
+            ],
         ];
     }
     

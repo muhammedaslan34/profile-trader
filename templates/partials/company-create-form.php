@@ -94,15 +94,90 @@ $economic_activities = get_terms(['taxonomy' => 'economic_activity', 'hide_empty
                     وصف النشاط التجاري بشكل واضح
                     <span class="pt-required">*</span>
                 </label>
-                <textarea id="about_company" 
-                          name="about_company" 
-                          class="pt-textarea pt-editor" 
+                <textarea id="about_company"
+                          name="about_company"
+                          class="pt-textarea pt-editor"
                           rows="5"
                           required></textarea>
             </div>
+
+            <!-- Mission Statement -->
+            <div class="pt-form-group pt-col-full">
+                <label for="mission_statement" class="pt-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    بيان المهمة
+                </label>
+                <textarea id="mission_statement"
+                          name="mission_statement"
+                          class="pt-textarea"
+                          placeholder="ما هي مهمة شركتكم؟"
+                          rows="3"></textarea>
+            </div>
+
+            <!-- Vision -->
+            <div class="pt-form-group pt-col-full">
+                <label for="vision" class="pt-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    الرؤية
+                </label>
+                <textarea id="vision"
+                          name="vision"
+                          class="pt-textarea"
+                          placeholder="ما هي رؤية شركتكم للمستقبل؟"
+                          rows="3"></textarea>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Key Statistics Section -->
+    <div class="pt-form-section">
+        <div class="pt-section-header">
+            <h2 class="pt-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                الإحصائيات الرئيسية
+            </h2>
+            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-stat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                إضافة إحصائية
+            </button>
+        </div>
+        <div class="pt-repeater pt-stats-repeater" id="key_statistics-repeater"></div>
+    </div>
+
+    <!-- Highlights Section -->
+    <div class="pt-form-section">
+        <div class="pt-section-header">
+            <h2 class="pt-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                النقاط المميزة
+            </h2>
+            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-highlight-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                إضافة نقطة
+            </button>
+        </div>
+        <div class="pt-repeater pt-highlights-repeater" id="about_highlights-repeater"></div>
+    </div>
+
     <!-- Classification Section -->
     <div class="pt-form-section">
         <div class="pt-section-header">

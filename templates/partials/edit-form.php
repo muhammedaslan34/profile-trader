@@ -240,7 +240,176 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
             </div>
         </div>
     </div>
-    
+
+    <!-- Structured About Information -->
+    <div class="pt-form-section">
+        <div class="pt-section-header">
+            <h2 class="pt-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                معلومات إضافية عن الشركة
+            </h2>
+        </div>
+
+        <div class="pt-form-grid">
+            <!-- Mission Statement -->
+            <div class="pt-form-group pt-col-full">
+                <label for="mission_statement" class="pt-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    بيان المهمة
+                </label>
+                <textarea id="mission_statement"
+                          name="mission_statement"
+                          class="pt-textarea"
+                          placeholder="ما هي مهمة شركتكم؟"
+                          rows="3"><?php echo esc_textarea($values['mission_statement'] ?? ''); ?></textarea>
+            </div>
+
+            <!-- Vision -->
+            <div class="pt-form-group pt-col-full">
+                <label for="vision" class="pt-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-left:6px;">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    الرؤية
+                </label>
+                <textarea id="vision"
+                          name="vision"
+                          class="pt-textarea"
+                          placeholder="ما هي رؤية شركتكم للمستقبل؟"
+                          rows="3"><?php echo esc_textarea($values['vision'] ?? ''); ?></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Statistics Section -->
+    <div class="pt-form-section">
+        <div class="pt-section-header">
+            <h2 class="pt-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                الإحصائيات الرئيسية
+            </h2>
+            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-stat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                إضافة إحصائية
+            </button>
+        </div>
+
+        <div class="pt-repeater pt-stats-repeater" id="key_statistics-repeater">
+            <?php
+            $stats = $values['key_statistics'] ?? [];
+            if (!is_array($stats)) $stats = [];
+
+            if (!empty($stats)):
+            foreach ($stats as $index => $stat):
+            ?>
+            <div class="pt-repeater-item pt-stat-item-row" data-index="<?php echo $index; ?>">
+                <div class="pt-form-grid pt-form-grid-stats">
+                    <div class="pt-form-group">
+                        <label class="pt-label">الرقم</label>
+                        <input type="text"
+                               name="key_statistics[<?php echo $index; ?>][stat_number]"
+                               class="pt-input"
+                               placeholder="مثال: +500"
+                               value="<?php echo esc_attr($stat['stat_number'] ?? ''); ?>">
+                    </div>
+                    <div class="pt-form-group">
+                        <label class="pt-label">الوصف</label>
+                        <input type="text"
+                               name="key_statistics[<?php echo $index; ?>][stat_label]"
+                               class="pt-input"
+                               placeholder="مثال: عميل سعيد"
+                               value="<?php echo esc_attr($stat['stat_label'] ?? ''); ?>">
+                    </div>
+                    <div class="pt-form-group">
+                        <label class="pt-label">الأيقونة</label>
+                        <select name="key_statistics[<?php echo $index; ?>][stat_icon]" class="pt-select">
+                            <option value="calendar_month" <?php selected($stat['stat_icon'] ?? '', 'calendar_month'); ?>>سنوات الخبرة</option>
+                            <option value="groups" <?php selected($stat['stat_icon'] ?? '', 'groups'); ?>>العملاء</option>
+                            <option value="handshake" <?php selected($stat['stat_icon'] ?? '', 'handshake'); ?>>الشركاء</option>
+                            <option value="workspace_premium" <?php selected($stat['stat_icon'] ?? '', 'workspace_premium'); ?>>الجوائز</option>
+                            <option value="verified" <?php selected($stat['stat_icon'] ?? '', 'verified'); ?>>المشاريع</option>
+                            <option value="star" <?php selected($stat['stat_icon'] ?? '', 'star'); ?>>نجمة</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="pt-remove-repeater-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+            <?php
+            endforeach;
+            endif;
+            ?>
+        </div>
+    </div>
+
+    <!-- Highlights Section -->
+    <div class="pt-form-section">
+        <div class="pt-section-header">
+            <h2 class="pt-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                النقاط المميزة
+            </h2>
+            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-highlight-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                إضافة نقطة
+            </button>
+        </div>
+
+        <div class="pt-repeater pt-highlights-repeater" id="about_highlights-repeater">
+            <?php
+            $highlights = $values['about_highlights'] ?? [];
+            if (!is_array($highlights)) $highlights = [];
+
+            if (!empty($highlights)):
+            foreach ($highlights as $index => $item):
+            ?>
+            <div class="pt-repeater-item pt-highlight-item-row" data-index="<?php echo $index; ?>">
+                <div class="pt-repeater-content">
+                    <input type="text"
+                           name="about_highlights[<?php echo $index; ?>][highlight_text]"
+                           class="pt-input"
+                           placeholder="نقطة مميزة عن شركتكم"
+                           value="<?php echo esc_attr($item['highlight_text'] ?? ''); ?>">
+                </div>
+                <button type="button" class="pt-remove-repeater-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+            <?php
+            endforeach;
+            endif;
+            ?>
+        </div>
+    </div>
+
     <!-- Classification Section (Taxonomies) -->
     <div class="pt-form-section">
         <div class="pt-section-header">

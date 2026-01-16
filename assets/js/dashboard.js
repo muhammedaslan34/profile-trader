@@ -2029,12 +2029,96 @@
             setTimeout(function() {
                 $error.fadeOut();
             }, 5000);
+        },
+
+        /**
+         * Initialize statistics and highlights repeaters
+         */
+        initRepeaters: function() {
+            const self = this;
+
+            // Statistics repeater - Add button
+            $(document).on('click', '.pt-add-stat-btn', function() {
+                const $repeater = $('#key_statistics-repeater');
+                const index = $repeater.find('.pt-repeater-item').length;
+
+                const template = `
+                <div class="pt-repeater-item pt-stat-item-row" data-index="${index}">
+                    <div class="pt-form-grid pt-form-grid-stats">
+                        <div class="pt-form-group">
+                            <label class="pt-label">الرقم</label>
+                            <input type="text"
+                                   name="key_statistics[${index}][stat_number]"
+                                   class="pt-input"
+                                   placeholder="مثال: +500">
+                        </div>
+                        <div class="pt-form-group">
+                            <label class="pt-label">الوصف</label>
+                            <input type="text"
+                                   name="key_statistics[${index}][stat_label]"
+                                   class="pt-input"
+                                   placeholder="مثال: عميل سعيد">
+                        </div>
+                        <div class="pt-form-group">
+                            <label class="pt-label">الأيقونة</label>
+                            <select name="key_statistics[${index}][stat_icon]" class="pt-select">
+                                <option value="calendar_month">سنوات الخبرة</option>
+                                <option value="groups">العملاء</option>
+                                <option value="handshake">الشركاء</option>
+                                <option value="workspace_premium">الجوائز</option>
+                                <option value="verified">المشاريع</option>
+                                <option value="star">نجمة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="pt-remove-repeater-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>`;
+
+                $repeater.append(template);
+            });
+
+            // Highlights repeater - Add button
+            $(document).on('click', '.pt-add-highlight-btn', function() {
+                const $repeater = $('#about_highlights-repeater');
+                const index = $repeater.find('.pt-repeater-item').length;
+
+                const template = `
+                <div class="pt-repeater-item pt-highlight-item-row" data-index="${index}">
+                    <div class="pt-repeater-content">
+                        <input type="text"
+                               name="about_highlights[${index}][highlight_text]"
+                               class="pt-input"
+                               placeholder="نقطة مميزة عن شركتكم">
+                    </div>
+                    <button type="button" class="pt-remove-repeater-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>`;
+
+                $repeater.append(template);
+            });
+
+            // Remove repeater item
+            $(document).on('click', '.pt-remove-repeater-item', function() {
+                $(this).closest('.pt-repeater-item').fadeOut(200, function() {
+                    $(this).remove();
+                });
+            });
         }
     };
 
     // Initialize when DOM is ready
     $(document).ready(function() {
         PTDashboard.init();
+        PTDashboard.initRepeaters();
     });
 
     // Make available globally if needed

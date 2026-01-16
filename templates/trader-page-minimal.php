@@ -65,6 +65,11 @@ $meta_keys = [
     'profile_pdf' => ['je_trader_profile'],
     'facebook' => ['je_trader_facebook_page', 'facebook_page'],
     'instagram' => ['je_trader_instagram_page', 'instagram_page'],
+    'twitter' => ['je_trader_twitter', 'twitter', 'twitter_page'],
+    'linkedin' => ['je_trader_linkedin', 'linkedin', 'linkedin_page'],
+    'youtube' => ['je_trader_youtube', 'youtube', 'youtube_page'],
+    'telegram' => ['je_trader_telegram', 'telegram', 'telegram_page'],
+    'tiktok' => ['je_trader_tiktok', 'tiktok', 'tiktok_page'],
     'short_desc' => ['short_desc'],
     'type_of_industry' => ['type_of_industry'],
     'is_featured' => ['is_featured'],
@@ -81,15 +86,27 @@ foreach ($meta_keys as $key => $keys) {
 $trader_logo_id = $meta['logo'] ?: get_post_thumbnail_id($trader_id);
 $trader_logo_url = $trader_logo_id ? wp_get_attachment_image_url($trader_logo_id, 'medium') : '';
 
-// OPTIMIZATION: Get all taxonomies in one call
-$taxonomies = ['sector', 'activity', 'economic_activity'];
-$all_terms = [];
-foreach ($taxonomies as $tax) {
+// Get taxonomies separately - activities will have its own section
+$header_taxonomies = ['sector', 'economic_activity'];
+$header_terms = [];
+foreach ($header_taxonomies as $tax) {
     $terms = wp_get_post_terms($trader_id, $tax, ['fields' => 'names']);
     if (!is_wp_error($terms)) {
-        $all_terms = array_merge($all_terms, $terms);
+        $header_terms = array_merge($header_terms, $terms);
     }
 }
+// Get activities separately for dedicated section
+$activity_terms = wp_get_post_terms($trader_id, 'activity', ['fields' => 'all']);
+if (is_wp_error($activity_terms)) {
+    $activity_terms = [];
+}
+
+// Get structured about section fields
+$mission_statement = get_post_meta($trader_id, 'mission_statement', true);
+$vision = get_post_meta($trader_id, 'vision', true);
+$key_statistics = get_post_meta($trader_id, 'key_statistics', true);
+$about_highlights = get_post_meta($trader_id, 'about_highlights', true);
+$has_structured_about = !empty($mission_statement) || !empty($vision) || !empty($key_statistics) || !empty($about_highlights);
 
 // Format data
 $trader_score = $meta['score'] ?: '9.8';
@@ -121,7 +138,7 @@ if (!empty($meta['gallery'])) {
         // Prime attachment cache
         _prime_post_caches($gallery_ids, false, true);
         foreach ($gallery_ids as $img_id) {
-            $img_url = wp_get_attachment_image_url($img_id, 'medium');
+            $img_url = wp_get_attachment_image_url($img_id, 'large');
             if ($img_url) {
                 $gallery_images[] = [
                     'id' => $img_id,
@@ -206,7 +223,11 @@ if (empty($branches)) {
                     <?php if ($trader_logo_url): ?>
                         <img src="<?php echo esc_url($trader_logo_url); ?>" alt="<?php echo esc_attr($trader_name); ?>" class="pt-logo" loading="eager" width="128" height="128"/>
                     <?php else: ?>
-                        <div class="pt-logo-placeholder"><?php echo esc_html(mb_substr($trader_name, 0, 1)); ?></div>
+                        <?php 
+                        // Use Website-icon.svg as fallback
+                        $default_logo_url = defined('PT_PLUGIN_URL') ? PT_PLUGIN_URL . 'assets/Website-icon.svg' : plugin_dir_url(dirname(__FILE__)) . 'assets/Website-icon.svg';
+                        ?>
+                        <img src="<?php echo esc_url($default_logo_url); ?>" alt="<?php echo esc_attr($trader_name); ?>" class="pt-logo pt-logo-default" loading="eager" width="128" height="128"/>
                     <?php endif; ?>
                     <div class="pt-verified-badge">
                         <span class="material-symbols-outlined">verified</span>
@@ -214,9 +235,52 @@ if (empty($branches)) {
                 </div>
                 <div class="pt-header-info">
                     <h1 class="pt-title"><?php echo esc_html($trader_name); ?></h1>
-                    <?php if (!empty($all_terms)): ?>
+                    
+                    <?php 
+                    // Get Economic Activity term
+                    $economic_activity_terms = wp_get_post_terms($trader_id, 'economic_activity', ['fields' => 'names']);
+                    $economic_activity = !empty($economic_activity_terms) && !is_wp_error($economic_activity_terms) ? $economic_activity_terms[0] : '';
+                    
+                    // Format score - convert to Arabic ordinal if needed
+                    $score_display = '';
+                    if (!empty($meta['score'])) {
+                        $score_value = $meta['score'];
+                        // If score is numeric, try to convert to Arabic ordinal
+                        if (is_numeric($score_value)) {
+                            $score_num = intval($score_value);
+                            $arabic_ordinals = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة', 'العاشرة'];
+                            if ($score_num >= 1 && $score_num <= 10) {
+                                $score_display = $arabic_ordinals[$score_num];
+                            } else {
+                                $score_display = $score_value;
+                            }
+                        } else {
+                            $score_display = $score_value;
+                        }
+                    }
+                    ?>
+                    
+                    <?php if ($economic_activity || $score_display): ?>
+                    <div class="pt-info-badges">
+                        <?php if ($economic_activity): ?>
+                        <div class="pt-info-badge pt-badge-activity">
+                            النشاط الاقتصادي: <?php echo esc_html($economic_activity); ?>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($score_display): ?>
+                        <div class="pt-info-badge pt-badge-score">
+                            درجة السجل: <?php echo esc_html($score_display); ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php 
+                    // Get only sector taxonomy terms
+                    $sector_terms = wp_get_post_terms($trader_id, 'sector', ['fields' => 'names']);
+                    if (!empty($sector_terms) && !is_wp_error($sector_terms)): ?>
                         <div class="pt-categories">
-                            <?php foreach (array_slice($all_terms, 0, 5) as $term): ?>
+                            <?php foreach (array_slice($sector_terms, 0, 5) as $term): ?>
                                 <span class="pt-category"><?php echo esc_html($term); ?></span>
                             <?php endforeach; ?>
                         </div>
@@ -260,46 +324,165 @@ if (empty($branches)) {
     <div class="pt-grid">
         <!-- Main Content -->
         <div>
-            <!-- About -->
-            <div class="pt-card">
+            <!-- About Section - Enhanced -->
+            <div class="pt-card pt-about-card">
                 <div class="pt-card-header">
                     <h2 class="pt-card-title">
                         <span class="material-symbols-outlined">info</span>
                         نبذة عن التاجر
                     </h2>
+                    <button class="pt-about-toggle" aria-expanded="true" onclick="this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); this.closest('.pt-card').querySelector('.pt-card-body').classList.toggle('is-collapsed');">
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </button>
                 </div>
                 <div class="pt-card-body">
-                    <?php if ($trader_content): ?>
-                        <?php echo wp_kses_post(wpautop($trader_content)); ?>
+                    <?php if ($has_structured_about): ?>
+
+                        <?php // Key Statistics ?>
+                        <?php if (!empty($key_statistics) && is_array($key_statistics)): ?>
+                        <div class="pt-about-stats">
+                            <?php foreach ($key_statistics as $stat):
+                                if (empty($stat['stat_number'])) continue;
+                                $icon = !empty($stat['stat_icon']) ? $stat['stat_icon'] : 'star';
+                            ?>
+                            <div class="pt-stat-item">
+                                <div class="pt-stat-icon-wrap">
+                                    <span class="material-symbols-outlined"><?php echo esc_attr($icon); ?></span>
+                                </div>
+                                <div class="pt-stat-value"><?php echo esc_html($stat['stat_number']); ?></div>
+                                <div class="pt-stat-desc"><?php echo esc_html($stat['stat_label'] ?? ''); ?></div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php // Company Overview ?>
+                        <?php if ($trader_content): ?>
+                        <div class="pt-about-section">
+                            <div class="pt-about-section-header">
+                                <span class="material-symbols-outlined">apartment</span>
+                                <h3>نظرة عامة</h3>
+                            </div>
+                            <div class="pt-about-section-content">
+                                <?php echo wp_kses_post(wpautop($trader_content)); ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php // Mission Statement ?>
+                        <?php if (!empty($mission_statement)): ?>
+                        <div class="pt-about-section pt-mission">
+                            <div class="pt-about-section-header">
+                                <span class="material-symbols-outlined">track_changes</span>
+                                <h3>مهمتنا</h3>
+                            </div>
+                            <div class="pt-about-section-content pt-highlight-box">
+                                <?php echo wp_kses_post(wpautop($mission_statement)); ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php // Vision ?>
+                        <?php if (!empty($vision)): ?>
+                        <div class="pt-about-section pt-vision">
+                            <div class="pt-about-section-header">
+                                <span class="material-symbols-outlined">visibility</span>
+                                <h3>رؤيتنا</h3>
+                            </div>
+                            <div class="pt-about-section-content pt-highlight-box pt-highlight-accent">
+                                <?php echo wp_kses_post(wpautop($vision)); ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php // Highlights List ?>
+                        <?php if (!empty($about_highlights) && is_array($about_highlights)): ?>
+                        <div class="pt-about-section pt-highlights">
+                            <div class="pt-about-section-header">
+                                <span class="material-symbols-outlined">stars</span>
+                                <h3>ما يميزنا</h3>
+                            </div>
+                            <ul class="pt-highlight-list">
+                                <?php foreach ($about_highlights as $item):
+                                    if (empty($item['highlight_text'])) continue;
+                                ?>
+                                <li>
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                    <?php echo esc_html($item['highlight_text']); ?>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <?php endif; ?>
+
                     <?php else: ?>
-                        <div class="pt-empty">لا توجد معلومات متاحة</div>
+                        <?php // Fallback: Original post_content display for backward compatibility ?>
+                        <?php if ($trader_content): ?>
+                            <?php echo wp_kses_post(wpautop($trader_content)); ?>
+                        <?php else: ?>
+                            <div class="pt-empty">لا توجد معلومات متاحة</div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
 
+            <?php // Activities Section - Separate Display ?>
+            <?php if (!empty($activity_terms)): ?>
+            <div class="pt-card pt-activities-card">
+                <div class="pt-card-header">
+                    <h2 class="pt-card-title">
+                        <span class="material-symbols-outlined">category</span>
+                        مجالات النشاط
+                    </h2>
+                </div>
+                <div class="pt-card-body">
+                    <div class="pt-activities-grid">
+                        <?php foreach ($activity_terms as $term): ?>
+                        <div class="pt-activity-item">
+                            <div class="pt-activity-icon">
+                                <span class="material-symbols-outlined">check_circle</span>
+                            </div>
+                            <div class="pt-activity-content">
+                                <span class="pt-activity-name"><?php echo esc_html($term->name); ?></span>
+                                <?php if (!empty($term->description)): ?>
+                                <span class="pt-activity-desc"><?php echo esc_html($term->description); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Services -->
-            <div class="pt-card">
+            <div class="pt-card pt-services-card">
                 <div class="pt-card-header">
                     <h2 class="pt-card-title">
                         <span class="material-symbols-outlined">inventory_2</span>
                         الخدمات والمنتجات
                     </h2>
+                    <?php if (!empty($services) && count($services) > 0): ?>
+                    <span class="pt-services-count"><?php echo count($services); ?> خدمة</span>
+                    <?php endif; ?>
                 </div>
                 <div class="pt-card-body">
                     <?php if (!empty($services)): ?>
-                        <div class="pt-services-grid">
-                            <?php foreach ($services as $service): 
+                        <div class="pt-services-grid-enhanced">
+                            <?php
+                            foreach ($services as $service):
                                 $service_name = is_array($service) ? ($service['name'] ?? $service['services_name'] ?? '') : $service;
                                 if (empty($service_name)) continue;
                             ?>
-                                <div class="pt-service">
-                                    <div class="pt-service-icon-check">
-                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
+                                <div class="pt-service-card">
+                                    <div class="pt-service-icon-wrap">
+                                        <span class="material-symbols-outlined">package_2</span>
                                     </div>
-                                    <div class="pt-service-content">
-                                        <h4><?php echo esc_html($service_name); ?></h4>
+                                    <div class="pt-service-info">
+                                        <h4 class="pt-service-name"><?php echo esc_html($service_name); ?></h4>
+                                    </div>
+                                    <div class="pt-service-badge">
+                                        <span class="material-symbols-outlined">verified</span>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -320,12 +503,48 @@ if (empty($branches)) {
                 </div>
                 <div class="pt-card-body">
                     <?php if (!empty($gallery_images)): ?>
-                        <div class="pt-gallery-grid">
-                            <?php foreach (array_slice($gallery_images, 0, 9) as $img): ?>
-                                <div class="pt-gallery-item" onclick="window.open('<?php echo esc_url($img['full_url']); ?>', '_blank')">
-                                    <img src="<?php echo esc_url($img['url']); ?>" alt="<?php echo esc_attr($img['alt']); ?>" loading="lazy" width="300" height="300"/>
+                        <?php 
+                        $gallery_images_sliced = array_slice($gallery_images, 0, 9);
+                        $first_image = $gallery_images_sliced[0];
+                        $remaining_images = array_slice($gallery_images_sliced, 1);
+                        ?>
+                        <div class="pt-gallery-main-wrapper">
+                            <!-- Main Large Image -->
+                            <div class="pt-gallery-main">
+                                <div class="pt-gallery-main-item" data-gallery-full="<?php echo esc_url($first_image['full_url']); ?>">
+                                    <img src="<?php echo esc_url($first_image['url']); ?>" alt="<?php echo esc_attr($first_image['alt']); ?>" id="pt-gallery-main-img" loading="eager"/>
+                                    <div class="pt-gallery-overlay">
+                                        <span class="material-symbols-outlined">zoom_in</span>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
+                            </div>
+                            
+                            <!-- Thumbnails -->
+                            <?php if (!empty($remaining_images)): ?>
+                            <div class="pt-gallery-thumbnails">
+                                <?php foreach ($remaining_images as $index => $img): ?>
+                                    <div class="pt-gallery-thumb" data-gallery-index="<?php echo esc_attr($index + 1); ?>" data-gallery-url="<?php echo esc_url($img['url']); ?>" data-gallery-full="<?php echo esc_url($img['full_url']); ?>" data-gallery-alt="<?php echo esc_attr($img['alt']); ?>">
+                                        <img src="<?php echo esc_url($img['url']); ?>" alt="<?php echo esc_attr($img['alt']); ?>" loading="lazy"/>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Lightbox Modal -->
+                        <div class="pt-gallery-lightbox" id="pt-gallery-lightbox">
+                            <div class="pt-gallery-lightbox-close">
+                                <span class="material-symbols-outlined">close</span>
+                            </div>
+                            <div class="pt-gallery-lightbox-prev">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </div>
+                            <div class="pt-gallery-lightbox-next">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </div>
+                            <div class="pt-gallery-lightbox-content">
+                                <img src="" alt="" id="pt-gallery-lightbox-img"/>
+                            </div>
                         </div>
                     <?php else: ?>
                         <div class="pt-empty">لا توجد صور متاحة</div>
@@ -397,7 +616,7 @@ if (empty($branches)) {
                 <div class="pt-card-header">
                     <h3 class="pt-card-title">
                         <span class="material-symbols-outlined">verified_user</span>
-                        معلومات الأعمال الموثقة
+                        تفاصيل النشاط التجاري
                     </h3>
                 </div>
                 <div class="pt-card-body" style="padding:0">
@@ -475,16 +694,47 @@ if (empty($branches)) {
                             <a href="<?php echo esc_url($meta['website']); ?>" target="_blank" rel="noopener" class="pt-contact-link"><?php echo esc_html($meta['website']); ?></a>
                         </div>
                     <?php endif; ?>
-                    <?php if ($meta['facebook'] || $meta['instagram']): ?>
+                    <?php 
+                    $has_social_sidebar = $meta['facebook'] || $meta['instagram'] || $meta['twitter'] || $meta['linkedin'] || $meta['youtube'] || $meta['telegram'] || $meta['tiktok'];
+                    if ($has_social_sidebar): ?>
                         <div class="pt-social-links">
+                            <?php 
+                            $facebook_svg_url = defined('PT_PLUGIN_URL') ? PT_PLUGIN_URL . 'assets/facebook.svg' : plugin_dir_url(dirname(__FILE__)) . 'assets/facebook.svg';
+                            $instagram_svg_url = defined('PT_PLUGIN_URL') ? PT_PLUGIN_URL . 'assets/instagram.svg' : plugin_dir_url(dirname(__FILE__)) . 'assets/instagram.svg';
+                            ?>
                             <?php if ($meta['facebook']): ?>
-                                <a href="<?php echo esc_url($meta['facebook']); ?>" target="_blank" rel="noopener" class="pt-social-link" title="Facebook">
-                                    <span class="material-symbols-outlined">social_leaderboard</span>
+                                <a href="<?php echo esc_url($meta['facebook']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-facebook" title="Facebook">
+                                    <img src="<?php echo esc_url($facebook_svg_url); ?>" alt="Facebook" width="20" height="20"/>
                                 </a>
                             <?php endif; ?>
                             <?php if ($meta['instagram']): ?>
-                                <a href="<?php echo esc_url($meta['instagram']); ?>" target="_blank" rel="noopener" class="pt-social-link" title="Instagram">
-                                    <span class="material-symbols-outlined">photo_camera</span>
+                                <a href="<?php echo esc_url($meta['instagram']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-instagram" title="Instagram">
+                                    <img src="<?php echo esc_url($instagram_svg_url); ?>" alt="Instagram" width="20" height="20"/>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($meta['twitter']): ?>
+                                <a href="<?php echo esc_url($meta['twitter']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-twitter" title="Twitter">
+                                    <span class="material-symbols-outlined">chat_bubble</span>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($meta['linkedin']): ?>
+                                <a href="<?php echo esc_url($meta['linkedin']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-linkedin" title="LinkedIn">
+                                    <span class="material-symbols-outlined">business</span>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($meta['youtube']): ?>
+                                <a href="<?php echo esc_url($meta['youtube']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-youtube" title="YouTube">
+                                    <span class="material-symbols-outlined">video_library</span>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($meta['telegram']): ?>
+                                <a href="<?php echo esc_url($meta['telegram']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-telegram" title="Telegram">
+                                    <span class="material-symbols-outlined">forum</span>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($meta['tiktok']): ?>
+                                <a href="<?php echo esc_url($meta['tiktok']); ?>" target="_blank" rel="noopener" class="pt-social-link pt-social-tiktok" title="TikTok">
+                                    <span class="material-symbols-outlined">music_video</span>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -649,3 +899,160 @@ if (empty($branches)) {
     </div>
 </div>
 </div>
+
+<script>
+(function() {
+    // Gallery Main Image and Thumbnails
+    const mainImg = document.getElementById('pt-gallery-main-img');
+    const mainItem = document.querySelector('.pt-gallery-main-item');
+    const thumbnails = document.querySelectorAll('.pt-gallery-thumb');
+    const lightbox = document.getElementById('pt-gallery-lightbox');
+    const lightboxImg = document.getElementById('pt-gallery-lightbox-img');
+    const lightboxClose = document.querySelector('.pt-gallery-lightbox-close');
+    const lightboxPrev = document.querySelector('.pt-gallery-lightbox-prev');
+    const lightboxNext = document.querySelector('.pt-gallery-lightbox-next');
+    
+    let currentIndex = 0;
+    let galleryImages = [];
+    
+    // Collect all gallery images (main + thumbnails)
+    if (mainItem) {
+        galleryImages.push({
+            url: mainImg ? mainImg.src : '',
+            full: mainItem.getAttribute('data-gallery-full'),
+            alt: mainImg ? mainImg.alt : ''
+        });
+    }
+    
+    thumbnails.forEach(function(thumb) {
+        galleryImages.push({
+            url: thumb.getAttribute('data-gallery-url'),
+            full: thumb.getAttribute('data-gallery-full'),
+            alt: thumb.getAttribute('data-gallery-alt')
+        });
+    });
+    
+    // Thumbnail click - change main image
+    thumbnails.forEach(function(thumb, index) {
+        thumb.addEventListener('click', function() {
+            // Remove active class from all thumbs
+            thumbnails.forEach(function(t) {
+                t.classList.remove('active');
+            });
+            
+            // Add active class to clicked thumb
+            thumb.classList.add('active');
+            
+            // Update main image
+            const newUrl = thumb.getAttribute('data-gallery-url');
+            const newFull = thumb.getAttribute('data-gallery-full');
+            const newAlt = thumb.getAttribute('data-gallery-alt');
+            
+            if (mainImg) {
+                mainImg.src = newUrl;
+                mainImg.alt = newAlt;
+            }
+            
+            if (mainItem) {
+                mainItem.setAttribute('data-gallery-full', newFull);
+            }
+            
+            currentIndex = index + 1;
+        });
+    });
+    
+    // Main image click - open lightbox
+    if (mainItem) {
+        mainItem.addEventListener('click', function() {
+            currentIndex = 0;
+            openLightbox();
+        });
+    }
+    
+    // Thumbnail double click or long press - open lightbox
+    thumbnails.forEach(function(thumb, index) {
+        thumb.addEventListener('dblclick', function() {
+            currentIndex = index + 1;
+            openLightbox();
+        });
+    });
+    
+    function openLightbox() {
+        if (galleryImages.length === 0) return;
+        lightboxImg.src = galleryImages[currentIndex].full;
+        lightboxImg.alt = galleryImages[currentIndex].alt;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    function showNext() {
+        currentIndex = (currentIndex + 1) % galleryImages.length;
+        lightboxImg.src = galleryImages[currentIndex].full;
+        lightboxImg.alt = galleryImages[currentIndex].alt;
+    }
+    
+    function showPrev() {
+        currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+        lightboxImg.src = galleryImages[currentIndex].full;
+        lightboxImg.alt = galleryImages[currentIndex].alt;
+    }
+    
+    // Event listeners
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+    
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', showNext);
+    }
+    
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', showPrev);
+    }
+    
+    // Close on background click
+    if (lightbox) {
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowRight') {
+            showNext();
+        } else if (e.key === 'ArrowLeft') {
+            showPrev();
+        }
+    });
+})();
+</script>
+
+<script>
+(function() {
+    const rotatingIcons = ['package_2', 'handyman', 'build', 'settings', 'engineering', 'construction', 'precision_manufacturing', 'home_repair_service'];
+    const iconElements = document.querySelectorAll('.pt-rotating-icon');
+    
+    if (iconElements.length > 0) {
+        let currentIndex = 0;
+        
+        setInterval(function() {
+            iconElements.forEach(function(icon) {
+                icon.textContent = rotatingIcons[currentIndex];
+            });
+            currentIndex = (currentIndex + 1) % rotatingIcons.length;
+        }, 2000); // Rotate every 2 seconds
+    }
+})();
+</script>
