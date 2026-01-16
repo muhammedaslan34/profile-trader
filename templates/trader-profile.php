@@ -299,7 +299,7 @@ if (!empty($ad_ids)) {
     --pt-font: 'Cairo', sans-serif;
 
     font-family: var(--pt-font);
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 24px 16px;
     color: var(--pt-text);

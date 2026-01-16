@@ -153,6 +153,9 @@ class Profile_Trader {
         add_shortcode('job_type_filter', [$this, 'job_type_filter_shortcode']);
         add_shortcode('single_ad', [$this, 'render_single_ad']);
         add_shortcode('trader_profile', [$this, 'render_trader_profile']);
+        add_shortcode('trader_page', [$this, 'render_trader_page']);
+        add_shortcode('trader_download', [$this, 'render_trader_download']);
+        add_shortcode('trader_qr', [$this, 'render_trader_qr']);
         add_shortcode('ads_archive', [$this, 'render_ads_archive']);
 
         // Add dashboard widgets
@@ -862,6 +865,126 @@ class Profile_Trader {
         ob_start();
         include PT_PLUGIN_DIR . 'templates/trader-profile.php';
         return ob_get_clean();
+    }
+
+    /**
+     * Render Trader Page Shortcode (Minimal UI)
+     * Usage: [trader_page id="123"] or [trader_page] (uses URL parameter or current post)
+     */
+    public function render_trader_page($atts) {
+        $atts = shortcode_atts([
+            'id' => 0,
+        ], $atts);
+
+        $trader_id = intval($atts['id']);
+
+        // Check URL parameter if no ID provided
+        if (!$trader_id && isset($_GET['trader_id'])) {
+            $trader_id = intval($_GET['trader_id']);
+        }
+
+        // Fallback to current post
+        if (!$trader_id) {
+            $trader_id = get_the_ID();
+        }
+
+        ob_start();
+        // Pass trader_id to template
+        include PT_PLUGIN_DIR . 'templates/trader-page-minimal.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Render Trader Download Shortcode
+     * Usage: [trader_download id="123" text="تحميل الملف الشخصي للتاجر"]
+     */
+    public function render_trader_download($atts) {
+        $atts = shortcode_atts([
+            'id' => 0,
+            'text' => 'تحميل الملف التعريفي (PDF)',
+        ], $atts);
+
+        $trader_id = intval($atts['id']);
+        if (!$trader_id) {
+            $trader_id = get_the_ID();
+        }
+
+        // Get PDF URL - check multiple meta keys
+        $pdf_url = get_post_meta($trader_id, 'je_trader_profile', true);
+        if (empty($pdf_url)) {
+            $pdf_url = get_post_meta($trader_id, 'profile_pdf', true);
+        }
+        if (empty($pdf_url)) {
+            $pdf_url = get_post_meta($trader_id, 'trader_profile', true);
+        }
+        
+        $download_text = esc_html($atts['text']);
+        
+        // Always show button, even if no PDF (button will be disabled)
+        if (empty($pdf_url)) {
+            return sprintf(
+                '<button class="pt-btn pt-btn-prim" style="width:100%%;justify-content:center;display:inline-flex;text-decoration:none;opacity:0.6;cursor:not-allowed" disabled>
+                    <span class="material-symbols-outlined">download</span>
+                    <span>%s</span>
+                </button>
+                <p style="font-size:12px;color:#94a3b8;margin-top:8px;text-align:center">الملف غير متوفر حالياً</p>',
+                $download_text
+            );
+        }
+        
+        return sprintf(
+            '<a href="%s" target="_blank" class="pt-btn pt-btn-prim" style="width:100%%;justify-content:center;display:inline-flex;text-decoration:none">
+                <span class="material-symbols-outlined">download</span>
+                <span>%s</span>
+            </a>',
+            esc_url($pdf_url),
+            $download_text
+        );
+    }
+
+    /**
+     * Render Trader QR Code Shortcode
+     * Usage: [trader_qr id="123" size="250" download="true" download_text="تحميل ال QR"]
+     */
+    public function render_trader_qr($atts) {
+        $atts = shortcode_atts([
+            'id' => 0,
+            'size' => 200,
+            'download' => 'false',
+            'download_text' => 'تحميل QR Code',
+        ], $atts);
+
+        $trader_id = intval($atts['id']);
+        if (!$trader_id) {
+            $trader_id = get_the_ID();
+        }
+
+        // Get trader URL
+        $trader_url = get_permalink($trader_id);
+        if (!$trader_url) {
+            $trader_url = home_url('/trader/' . $trader_id . '/');
+        }
+
+        // Generate QR code using a service (you can use any QR code API)
+        $size = intval($atts['size']);
+        $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=' . $size . 'x' . $size . '&data=' . urlencode($trader_url);
+        
+        $output = '<div style="text-align:center">';
+        $output .= '<img src="' . esc_url($qr_url) . '" alt="QR Code" style="max-width:100%;height:auto;border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff"/>';
+        
+        if ($atts['download'] === 'true') {
+            $download_text = esc_html($atts['download_text']);
+            $output .= '<div style="margin-top:12px">';
+            $output .= '<a href="' . esc_url($qr_url) . '" download="trader-qr-' . $trader_id . '.png" class="pt-btn pt-btn-sec" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:8px 16px;font-size:14px">';
+            $output .= '<span class="material-symbols-outlined" style="font-size:18px">download</span>';
+            $output .= '<span>' . $download_text . '</span>';
+            $output .= '</a>';
+            $output .= '</div>';
+        }
+        
+        $output .= '</div>';
+        
+        return $output;
     }
 
     /**
