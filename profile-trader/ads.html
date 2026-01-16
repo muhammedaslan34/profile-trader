@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marketplace | Data-Dense Comparison Grid</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --pt-primary: #0d7377;--pt-accent: #d4a853;--pt-bg: #f8fafc;--pt-surface: #ffffff;--pt-text: #1e293b;}
+        body {
+            font-family: "Public Sans", sans-serif;
+            background-color: var(--pt-bg);
+            color: var(--pt-text);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .btn-primary {
+            background-color: var(--pt-primary);
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        .accent-border {
+            border-color: var(--pt-accent);
+        }
+        .text-primary-custom {
+            color: var(--pt-primary);
+        }
+        .text-accent-custom {
+            color: var(--pt-accent);
+        }
+        .spec-badge {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #475569;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7377",
+                        "accent": "#d4a853",
+                        "pt-bg": "#f8fafc",
+                        "pt-surface": "#ffffff",
+                        "pt-text": "#1e293b",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md">
+<div class="max-w-[1440px] mx-auto px-4 lg:px-10 py-3 flex items-center justify-between whitespace-nowrap">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-pt-text text-xl font-bold leading-tight tracking-tight">Marketplace</h2>
+</div>
+<label class="hidden md:flex flex-col min-w-64 !h-10 max-w-96">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden">
+<div class="text-slate-400 flex border-none bg-slate-100 items-center justify-center pl-4">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-slate-100 text-pt-text focus:ring-0 placeholder:text-slate-400 px-4 pl-2 text-sm font-normal" placeholder="Search tech specs..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-slate-600 text-sm font-medium hover:text-primary transition-colors" href="#">Browse</a>
+<a class="text-slate-600 text-sm font-medium hover:text-primary transition-colors" href="#">Categories</a>
+<a class="text-slate-600 text-sm font-medium hover:text-primary transition-colors" href="#">Deals</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBF6jbQPrMPq7eqBzgMvMqC8jce_Cj3hK9Ko-PdyWrpkAP0-BycTcWjY3R_lkhvDMtbS7oKH8KwuHiVWqkoSwocczdk-U0oqJ7cI2RODV75wWUxMA1UR0qlsJ1N_3aQh1VuF-N8-OYN5_pchHHM2DlbOjgC_HhDSorUK3nWPeeMy46h7ma_Joeoy_cOdRV5htqZZevhnRW5f1xBUA_aijmK9QKGN0oMc1ByFVFrMNOQBTXGjOGVCoM3bzN1bS85Z5PCw2-Tg5bx2-4Q");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-4 lg:px-10 py-6">
+<div class="flex flex-wrap items-center gap-2 mb-6">
+<a class="text-slate-400 text-xs font-medium hover:text-primary" href="#">Home</a>
+<span class="text-slate-400 text-xs">/</span>
+<a class="text-slate-400 text-xs font-medium hover:text-primary" href="#">Electronics</a>
+<span class="text-slate-400 text-xs">/</span>
+<span class="text-pt-text text-xs font-semibold">Premium Laptops</span>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<aside class="w-full lg:w-60 flex-shrink-0">
+<div class="sticky top-24 flex flex-col gap-5 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+<div class="flex items-center justify-between">
+<h3 class="text-pt-text text-base font-bold">Filters</h3>
+<button class="text-primary text-[10px] font-bold uppercase tracking-wider">Reset</button>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Category</p>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 text-primary">
+<span class="material-symbols-outlined text-[18px]">laptop_mac</span>
+<p class="text-xs font-semibold">Laptops</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[18px]">smartphone</span>
+<p class="text-xs font-medium">Smartphones</p>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<p class="text-slate-400 text-[10px] font-bold uppercase">Price Range</p>
+<div class="flex items-center gap-1.5">
+<input class="w-full bg-slate-50 border-slate-200 rounded-lg text-xs px-2 py-1.5 focus:ring-primary focus:border-primary" placeholder="Min" type="text"/>
+<input class="w-full bg-slate-50 border-slate-200 rounded-lg text-xs px-2 py-1.5 focus:ring-primary focus:border-primary" placeholder="Max" type="text"/>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full py-2 bg-primary text-white rounded-lg text-xs font-bold">Apply Filters</button>
+</div>
+</div>
+</aside>
+<div class="flex-1">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+<div>
+<h2 class="text-pt-text text-2xl font-extrabold tracking-tight">Tech Comparison Grid</h2>
+<p class="text-slate-500 text-sm mt-0.5">Quickly compare top specifications for 124 results</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs text-slate-500 font-medium">View: Grid (3x3)</span>
+<select class="bg-white border border-slate-200 text-xs font-semibold text-pt-text rounded-lg px-3 py-1.5 focus:ring-primary focus:border-primary cursor-pointer">
+<option>Newest Listings</option>
+<option>Price: Low to High</option>
+<option>Specs: Highest First</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<div class="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+<div class="relative h-48 overflow-hidden bg-slate-100">
+<div class="absolute top-3 left-3 z-10 px-2 py-0.5 bg-accent text-white text-[9px] font-bold uppercase rounded tracking-wider shadow-sm">Featured</div>
+<button class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHJoNcc2GP071glx3A2HEcTWlvT4ZaGHVVHAhWHcRjnG59aJZ93DcRKNdC95ZArskMAD6-69N96vM9cCLT4JPipIrheNfQ-0oakw0l1xJAvsuZ8Iw-umkHDqqrCaPEN3NlTiDuYjVMkEF5hNpkN4Ar7_wNb12smyXCnkSC9IerhI9IVXnq3B4H3x4WgPkFPMfrggc2B_bgXkK0tlcIngOVLkkbYVk5vsKQtoE3dHkeAUSG8yuAQDnAKAP7eB4f_cky1n8S9YuvhBhA");'></div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<div class="mb-3">
+<h3 class="text-sm font-bold text-pt-text group-hover:text-primary transition-colors line-clamp-1">Pro Laptop 16" M2 Max</h3>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-lg font-bold text-primary">$2,499</span>
+<span class="text-[10px] text-slate-400 line-through">$2,699</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">memory</span>
+<span class="text-[11px] font-medium text-slate-600">32GB RAM</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">storage</span>
+<span class="text-[11px] font-medium text-slate-600">1TB SSD</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">processing_cluster</span>
+<span class="text-[11px] font-medium text-slate-600">Apple M2 Max</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">battery_very_low</span>
+<span class="text-[11px] font-medium text-slate-600">98% Health</span>
+</div>
+</div>
+<div class="mt-auto space-y-2">
+<div class="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-slate-50">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>San Francisco</span>
+</div>
+<span class="flex items-center gap-1 text-green-600 font-semibold">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                                        Verified
+                                    </span>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">call</span>
+                                        Call
+                                    </button>
+<button class="flex-1 border border-primary text-primary text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+                                        Message
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+<div class="relative h-48 overflow-hidden bg-slate-100">
+<button class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9HBc_APrHF9ivBEV_ljOB8Or0d0ALfysPCJ-rfUujr_Rh2oDwBLo-a6yktcAts1gLwAw7-8LQxA_2pH-SaDQ7MP2tqEx2rz7GvGu5ldbZQpAHp_9F2rkUBeqSdSvlEfLl-vOrzVfX7a9aed1jCOAfqC7KhdF9o5-KEBZSBEtrxWYvGqYGYrB_367l7bKYm9ox_ZPezDW0551uDUf1ESRs2jwiPqj3OQRk-cR35pOkypupjnavyo2KtD2tA_3Q-0b4hQjuX4lCBdOF");'></div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<div class="mb-3">
+<h3 class="text-sm font-bold text-pt-text group-hover:text-primary transition-colors line-clamp-1">Stealth Blade 15 - RTX 3080</h3>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-lg font-bold text-primary">$1,850</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">memory</span>
+<span class="text-[11px] font-medium text-slate-600">32GB DDR5</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">storage</span>
+<span class="text-[11px] font-medium text-slate-600">2TB NVMe</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">settings_input_component</span>
+<span class="text-[11px] font-medium text-slate-600">RTX 3080Ti</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">monitor</span>
+<span class="text-[11px] font-medium text-slate-600">360Hz QHD</span>
+</div>
+</div>
+<div class="mt-auto space-y-2">
+<div class="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-slate-50">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>Austin, TX</span>
+</div>
+<span class="text-[10px] font-semibold text-accent uppercase">Top Rated</span>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">call</span>
+                                        Call
+                                    </button>
+<button class="flex-1 border border-primary text-primary text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+                                        Message
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+<div class="relative h-48 overflow-hidden bg-slate-100">
+<button class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuASTUpMA07974S9WcPXsmwexm78Tr0vcDuHSEPR3y4Z3I4Qmb01QT2xEFmarW1NZgt6Sh6Mf5x3pTEoPIosxHqItHEWFPy_bQnwXR4l_7fwHQR65_M6MZ-_Nk619M4F8Ci7Ak0k2CpixStT35IbCBF5EjHyrs9JMLkiN8EXrDAEbD_o0LJWftdNO7BWCfvG4M0iRDVB2Y6Or3B-fvxpcrlS29Pw3g0n4ZbOuZhJHmWnVqo8fpycKd-iRFDad-YYJ2t22mATneGxc2qa");'></div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<div class="mb-3">
+<h3 class="text-sm font-bold text-pt-text group-hover:text-primary transition-colors line-clamp-1">XPS 13 Plus - 4K OLED</h3>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-lg font-bold text-primary">$1,299</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">memory</span>
+<span class="text-[11px] font-medium text-slate-600">16GB LPDDR5</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">storage</span>
+<span class="text-[11px] font-medium text-slate-600">512GB SSD</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">touch_app</span>
+<span class="text-[11px] font-medium text-slate-600">Touchscreen</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-accent">weight</span>
+<span class="text-[11px] font-medium text-slate-600">1.2 kg</span>
+</div>
+</div>
+<div class="mt-auto space-y-2">
+<div class="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-slate-50">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">location_on</span>
+<span>Seattle, WA</span>
+</div>
+<span class="text-[10px] text-slate-500">2h ago</span>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]">call</span>
+                                        Call
+                                    </button>
+<button class="flex-1 border border-primary text-primary text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+                                        Message
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="group flex flex-col bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+<div class="relative h-48 overflow-hidden bg-slate-100">
+<div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHJoNcc2GP071glx3A2HEcTWlvT4ZaGHVVHAhWHcRjnG59aJZ93DcRKNdC95ZArskMAD6-69N96vM9cCLT4JPipIrheNfQ-0oakw0l1xJAvsuZ8Iw-umkHDqqrCaPEN3NlTiDuYjVMkEF5hNpkN4Ar7_wNb12smyXCnkSC9IerhI9IVXnq3B4H3x4WgPkFPMfrggc2B_bgXkK0tlcIngOVLkkbYVk5vsKQtoE3dHkeAUSG8yuAQDnAKAP7eB4f_cky1n8S9YuvhBhA");'></div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<div class="mb-3">
+<h3 class="text-sm font-bold text-pt-text group-hover:text-primary transition-colors line-clamp-1">Refurbished Pro 14"</h3>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-lg font-bold text-primary">$1,599</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-accent">memory</span><span class="text-[11px] font-medium text-slate-600">16GB RAM</span></div>
+<div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-accent">storage</span><span class="text-[11px] font-medium text-slate-600">512GB SSD</span></div>
+<div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-accent">processing_cluster</span><span class="text-[11px] font-medium text-slate-600">M1 Pro</span></div>
+<div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-accent">check_circle</span><span class="text-[11px] font-medium text-slate-600">Grade A</span></div>
+</div>
+<div class="mt-auto space-y-2">
+<div class="flex items-center justify-between text-[10px] text-slate-400 pb-2 border-b border-slate-50">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">location_on</span><span>Chicago</span></div>
+<span class="text-green-600 font-semibold">Verified</span>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 bg-primary text-white text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"><span class="material-symbols-outlined text-[16px]">call</span>Call</button>
+<button class="flex-1 border border-primary text-primary text-[11px] font-bold py-2 rounded flex items-center justify-center gap-1.5 hover:bg-primary/5 transition-colors"><span class="material-symbols-outlined text-[16px]">chat</span>Message</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center gap-2 mt-10">
+<button class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-white text-xs font-bold">1</button>
+<button class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-pt-text text-xs hover:border-primary hover:text-primary transition-colors">2</button>
+<button class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-pt-text text-xs hover:border-primary hover:text-primary transition-colors">3</button>
+<span class="text-slate-400 text-xs mx-1">...</span>
+<button class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>
