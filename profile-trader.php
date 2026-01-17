@@ -27,7 +27,8 @@ $includes_files = [
     'class-profile-handler.php',
     'class-trader-connection.php',
     'class-admin-settings.php',
-    'class-ad-views.php'
+    'class-ad-views.php',
+    'class-pdf-generator.php'
 ];
 
 foreach ($includes_files as $file) {
@@ -129,6 +130,10 @@ class Profile_Trader {
         add_action('wp_ajax_pt_migrate_gallery_meta', [$this, 'ajax_migrate_gallery_meta']);
         add_action('wp_ajax_pt_load_ads_archive', [$this, 'ajax_load_ads_archive']);
         add_action('wp_ajax_nopriv_pt_load_ads_archive', [$this, 'ajax_load_ads_archive']);
+        
+        // PDF export AJAX handlers
+        add_action('wp_ajax_pt_trader_pdf', [$this, 'handle_trader_pdf_export']);
+        add_action('wp_ajax_nopriv_pt_trader_pdf', [$this, 'handle_trader_pdf_export']);
 
         // Admin: Ads-Trader relationship meta box
         add_action('add_meta_boxes', [$this, 'add_ads_trader_meta_box']);
@@ -2120,6 +2125,85 @@ class Profile_Trader {
     }
     
     /**
+     * Handle trader PDF export via AJAX
+     */
+    public function handle_trader_pdf_export() {
+        try {
+            // Security check
+            if (!isset($_GET['nonce']) || !wp_verify_nonce($_GET['nonce'], 'pt_trader_pdf_nonce')) {
+                wp_die('Security check failed');
+            }
+            
+            $trader_id = isset($_GET['trader_id']) ? intval($_GET['trader_id']) : 0;
+            if (!$trader_id) {
+                wp_die('Invalid trader ID');
+            }
+            
+            // Check if trader post exists
+            $trader = get_post($trader_id);
+            if (!$trader || $trader->post_type !== 'trader') {
+                wp_die('Trader not found');
+            }
+            
+            // Load PDF generator class
+            if (!class_exists('PT_PDF_Generator')) {
+                wp_die('PDF generator class not found');
+            }
+            
+            // Try to ensure qr code generator plugin constants are loaded
+            $qr_plugin_file = WP_PLUGIN_DIR . '/qr code generator for cpt/trader-qr-pdf.php';
+            $qr_plugin_path = WP_PLUGIN_DIR . '/qr code generator for cpt/vendor/autoload.php';
+            
+            if (file_exists($qr_plugin_file) && !defined('TRADER_QR_PDF_PLUGIN_DIR')) {
+                // Load the plugin file to get constants (but don't re-initialize if already loaded)
+                if (!class_exists('TraderQRPDF')) {
+                    require_once $qr_plugin_file;
+                }
+            }
+            
+            // Ensure autoloader is loaded before instantiating PDF generator
+            if (file_exists($qr_plugin_path) && !class_exists('Mpdf\Mpdf')) {
+                require_once $qr_plugin_path;
+            }
+            
+            // Generate PDF
+            try {
+                $pdf_generator = new PT_PDF_Generator();
+                if (!$pdf_generator->is_available()) {
+                    // Provide more helpful error message with debugging info
+                    $error_msg = 'PDF generation library not available. ';
+                    $last_error = $pdf_generator->get_last_error();
+                    
+                    if (!file_exists($qr_plugin_path)) {
+                        $error_msg .= 'mPDF autoloader not found at: ' . $qr_plugin_path . '. Please ensure the "qr code generator for cpt" plugin is installed and Composer dependencies are installed.';
+                    } elseif (!class_exists('Mpdf\Mpdf')) {
+                        $error_msg .= 'mPDF class (Mpdf\\Mpdf) not found after loading autoloader. Autoloader path: ' . $qr_plugin_path . '. Please check error logs for details.';
+                    } else {
+                        $error_msg .= 'mPDF class exists but could not be instantiated. ';
+                        if (!empty($last_error)) {
+                            $error_msg .= 'Error details: ' . $last_error . '. ';
+                        }
+                        $error_msg .= 'This usually means there is a configuration issue. ';
+                        $error_msg .= 'Common causes: missing fonts, temp directory permissions, PHP memory limit, or missing PHP extensions (GD, mbstring). ';
+                        $error_msg .= 'Please check WordPress error logs (wp-content/debug.log) for detailed error messages.';
+                    }
+                    wp_die($error_msg);
+                }
+            } catch (Exception $e) {
+                wp_die('PDF generator initialization failed: ' . $e->getMessage() . ' (Check error logs for details)');
+            } catch (Error $e) {
+                wp_die('PDF generator initialization error: ' . $e->getMessage() . ' (Check error logs for details)');
+            }
+            
+            $pdf_generator->generate_trader_pdf($trader_id);
+            
+        } catch (Exception $e) {
+            error_log('PT PDF Export Error: ' . $e->getMessage());
+            wp_die('PDF generation failed: ' . $e->getMessage());
+        }
+    }
+    
+    /**
      * Check and run gallery meta migration if needed (one-time)
      */
     public function maybe_migrate_gallery_meta() {
@@ -2425,6 +2509,9 @@ class Profile_Trader {
             $sort = 'date_desc';
         }
         
+        // Get location filter parameter
+        $location_filter = isset($_POST['location']) ? intval($_POST['location']) : 0;
+        
         // Parse sort parameter
         $orderby = 'date';
         $order = 'DESC';
@@ -2472,6 +2559,17 @@ class Profile_Trader {
                 [
                     'key' => 'price_ads',
                     'compare' => 'EXISTS'
+                ]
+            ];
+        }
+        
+        // Add taxonomy filter for offer_location
+        if ($location_filter > 0) {
+            $query_args['tax_query'] = [
+                [
+                    'taxonomy' => 'offer_location',
+                    'field' => 'term_id',
+                    'terms' => $location_filter,
                 ]
             ];
         }
@@ -2591,11 +2689,15 @@ class Profile_Trader {
         // Generate pagination
         ob_start();
         if ($ads_query->max_num_pages > 1) {
-            // Add per_page and sort to pagination links
-            $pagination_base = add_query_arg([
+            // Add per_page, sort, and location to pagination links
+            $pagination_args = [
                 'per_page' => $per_page,
                 'sort' => $sort
-            ], get_pagenum_link(1, false));
+            ];
+            if ($location_filter > 0) {
+                $pagination_args['location'] = $location_filter;
+            }
+            $pagination_base = add_query_arg($pagination_args, get_pagenum_link(1, false));
             $pagination_base = remove_query_arg('paged', $pagination_base);
             
             echo paginate_links([

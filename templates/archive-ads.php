@@ -26,6 +26,9 @@ if (!in_array($sort, $valid_sorts)) {
     $sort = 'date_desc';
 }
 
+// Get location filter parameter from URL
+$location_filter = isset($_GET['location']) ? intval($_GET['location']) : 0;
+
 // Parse sort parameter
 $orderby = 'date';
 $order = 'DESC';
@@ -77,6 +80,17 @@ if ($meta_key) {
     ];
 }
 
+// Add taxonomy filter for offer_location
+if ($location_filter > 0) {
+    $query_args['tax_query'] = [
+        [
+            'taxonomy' => 'offer_location',
+            'field' => 'term_id',
+            'terms' => $location_filter,
+        ]
+    ];
+}
+
 // Query ads
 $ads_query = new WP_Query($query_args);
 ?>
@@ -89,6 +103,41 @@ $ads_query = new WP_Query($query_args);
             <p class="pt-archive-count"><?php echo sprintf('عرض %d من %d إعلان', $ads_query->post_count, $ads_query->found_posts); ?></p>
             <?php endif; ?>
             <div class="pt-archive-controls">
+                <?php
+                // Get offer_location taxonomy terms
+                // Check if taxonomy exists and is registered for 'ads' post type
+                $taxonomy_exists = taxonomy_exists('offer_location');
+                $taxonomy_object = $taxonomy_exists ? get_taxonomy('offer_location') : false;
+                $is_registered_for_ads = $taxonomy_object && in_array('ads', (array) $taxonomy_object->object_type);
+                
+                if ($taxonomy_exists) {
+                    $location_terms = get_terms([
+                        'taxonomy' => 'offer_location',
+                        'hide_empty' => false, // Show all terms, even if they have no posts
+                    ]);
+                    
+                    // Always show the filter if taxonomy exists
+                    if (!is_wp_error($location_terms)) {
+                ?>
+                <div class="pt-location-selector">
+                    <label for="pt-location-select" class="pt-location-label">الموقع:</label>
+                    <select id="pt-location-select" class="pt-location-select">
+                        <option value="0">جميع المواقع</option>
+                        <?php if (!empty($location_terms)): ?>
+                            <?php foreach ($location_terms as $term): ?>
+                            <option value="<?php echo esc_attr($term->term_id); ?>" <?php selected($location_filter, $term->term_id); ?>>
+                                <?php echo esc_html($term->name); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="0" disabled>لا توجد مواقع متاحة</option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+                <?php
+                    }
+                }
+                ?>
                 <div class="pt-sort-selector">
                     <label for="pt-sort-select" class="pt-sort-label">ترتيب:</label>
                     <select id="pt-sort-select" class="pt-sort-select">
@@ -213,11 +262,15 @@ $ads_query = new WP_Query($query_args);
     <?php if ($ads_query->max_num_pages > 1): ?>
     <div id="pt-pagination-container" class="pt-pagination">
         <?php
-        // Build pagination base URL with per_page and sort parameters
-        $pagination_base = add_query_arg([
+        // Build pagination base URL with per_page, sort, and location parameters
+        $pagination_args = [
             'per_page' => $per_page,
             'sort' => $sort
-        ], get_pagenum_link(1, false));
+        ];
+        if ($location_filter > 0) {
+            $pagination_args['location'] = $location_filter;
+        }
+        $pagination_base = add_query_arg($pagination_args, get_pagenum_link(1, false));
         $pagination_base = remove_query_arg('paged', $pagination_base);
 
         echo paginate_links([
@@ -312,6 +365,7 @@ $ads_query = new WP_Query($query_args);
     flex-wrap: wrap;
 }
 
+.pt-location-selector,
 .pt-sort-selector,
 .pt-per-page-selector {
     display: flex;
@@ -319,6 +373,7 @@ $ads_query = new WP_Query($query_args);
     gap: 8px;
 }
 
+.pt-location-label,
 .pt-sort-label,
 .pt-per-page-label {
     font-family: var(--pt-font);
@@ -328,6 +383,7 @@ $ads_query = new WP_Query($query_args);
     margin: 0;
 }
 
+.pt-location-select,
 .pt-sort-select,
 .pt-per-page-select {
     font-family: var(--pt-font);
@@ -342,11 +398,13 @@ $ads_query = new WP_Query($query_args);
     min-width: 160px;
 }
 
+.pt-location-select:hover,
 .pt-sort-select:hover,
 .pt-per-page-select:hover {
     border-color: var(--pt-primary);
 }
 
+.pt-location-select:focus,
 .pt-sort-select:focus,
 .pt-per-page-select:focus {
     outline: none;
@@ -735,6 +793,7 @@ $ads_query = new WP_Query($query_args);
         width: 100%;
     }
     
+    .pt-location-select,
     .pt-sort-select,
     .pt-per-page-select {
         min-width: 140px;
@@ -809,47 +868,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const loading = document.getElementById('pt-loading');
     const perPageSelect = document.getElementById('pt-per-page-select');
     const sortSelect = document.getElementById('pt-sort-select');
+    const locationSelect = document.getElementById('pt-location-select');
     
-    // Handle per-page change
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', function() {
-            const perPage = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('per_page', perPage);
-            url.searchParams.delete('paged'); // Reset to page 1
-            window.location.href = url.toString();
-        });
-    }
-    
-    // Handle sort change
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            const sort = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('sort', sort);
-            url.searchParams.delete('paged'); // Reset to page 1
-            window.location.href = url.toString();
-        });
-    }
-    
-    if (!pagination) return;
-    
-    // Handle pagination clicks
-    pagination.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        if (!link || link.classList.contains('current')) return;
-        
-        e.preventDefault();
-        
-        const url = new URL(link.href);
-        const page = url.searchParams.get('paged') || 1;
-        
-        loadPage(page);
-    });
-    
+    // Define loadPage function first so it's available for all event listeners
     function loadPage(page) {
         const perPage = perPageSelect ? perPageSelect.value : <?php echo $per_page; ?>;
         const sort = sortSelect ? sortSelect.value : '<?php echo esc_js($sort); ?>';
+        const location = locationSelect ? locationSelect.value : '<?php echo esc_js($location_filter); ?>';
         // Show loading
         loading.style.display = 'block';
         container.style.opacity = '0.5';
@@ -864,6 +889,9 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('page', page);
         formData.append('per_page', perPage);
         formData.append('sort', sort);
+        if (location && location !== '0') {
+            formData.append('location', location);
+        }
         formData.append('nonce', '<?php echo wp_create_nonce('pt_archive_nonce'); ?>');
         formData.append('_ajax_nonce', '<?php echo wp_create_nonce('pt_archive_nonce'); ?>');
         
@@ -889,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     newUrl.searchParams.delete('paged');
                 }
-                // Keep per_page and sort parameters
+                // Keep per_page, sort, and location parameters
                 if (perPage && perPage !== '12') {
                     newUrl.searchParams.set('per_page', perPage);
                 } else {
@@ -900,7 +928,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     newUrl.searchParams.delete('sort');
                 }
-                window.history.pushState({ page: page, perPage: perPage, sort: sort }, '', newUrl);
+                if (location && location !== '0') {
+                    newUrl.searchParams.set('location', location);
+                } else {
+                    newUrl.searchParams.delete('location');
+                }
+                window.history.pushState({ page: page, perPage: perPage, sort: sort, location: location }, '', newUrl);
                 
                 // Update archive count if exists
                 const countEl = document.querySelector('.pt-archive-count');
@@ -922,17 +955,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Handle location change - AJAX
+    if (locationSelect) {
+        locationSelect.addEventListener('change', function() {
+            loadPage(1); // Reset to page 1 when filter changes
+        });
+    }
+    
+    // Handle per-page change - AJAX
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', function() {
+            loadPage(1); // Reset to page 1 when per-page changes
+        });
+    }
+    
+    // Handle sort change - AJAX
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            loadPage(1); // Reset to page 1 when sort changes
+        });
+    }
+    
+    // Handle pagination clicks
+    if (pagination) {
+        pagination.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link || link.classList.contains('current')) return;
+            
+            e.preventDefault();
+            
+            const url = new URL(link.href);
+            const page = url.searchParams.get('paged') || 1;
+            
+            loadPage(page);
+        });
+    }
+    
     // Handle browser back/forward buttons
     window.addEventListener('popstate', function(e) {
         const url = new URL(window.location.href);
         const page = url.searchParams.get('paged') || 1;
         const perPage = url.searchParams.get('per_page') || '12';
         const sort = url.searchParams.get('sort') || 'date_desc';
+        const location = url.searchParams.get('location') || '0';
         if (perPageSelect && perPageSelect.value !== perPage) {
             perPageSelect.value = perPage;
         }
         if (sortSelect && sortSelect.value !== sort) {
             sortSelect.value = sort;
+        }
+        if (locationSelect && locationSelect.value !== location) {
+            locationSelect.value = location;
         }
         loadPage(page);
     });

@@ -216,7 +216,7 @@ if (empty($branches)) {
 <!-- Hero Section (Full Width) -->
 <div class="pt-hero-section">
     <div class="pt-container">
-        <div class="pt-header-card">
+        <div class="">
         <div class="pt-header-content">
             <div class="pt-header-main">
                 <div class="pt-logo-wrapper">
@@ -553,59 +553,62 @@ if (empty($branches)) {
             </div>
 
             <!-- Branches -->
-            <div class="pt-card">
-                <div class="pt-card-header">
-                    <h2 class="pt-card-title">
-                        <span class="material-symbols-outlined">location_on</span>
-                        الفروع والمواقع
-                    </h2>
-                </div>
-                <div class="pt-card-body">
-                    <?php if (!empty($branches)): ?>
-                        <?php foreach ($branches as $branch): ?>
-                            <div class="pt-branch">
-                                <div class="pt-branch-name"><?php echo esc_html($branch['name'] ?: 'فرع'); ?></div>
-                                <?php if ($branch['address']): ?>
-                                    <div class="pt-branch-info">
-                                        <span class="material-symbols-outlined">location_on</span>
-                                        <?php echo esc_html($branch['address']); ?>
-                                    </div>
-                                <?php endif; ?>
+            <div class="pt-branches-section">
+                <h2 class="pt-branches-title">الفروع</h2>
+                <?php if (!empty($branches)): ?>
+                    <?php foreach ($branches as $branch): ?>
+                        <div class="pt-branch-card">
+                            <div class="pt-branch-card-name"><?php echo esc_html($branch['name'] ?: 'فرع'); ?></div>
+                            
+                            <?php if ($branch['phone'] || $branch['address']): ?>
+                            <div class="pt-branch-section">
+                                <h3 class="pt-branch-section-title">معلومات التواصل</h3>
                                 <?php if ($branch['phone']): ?>
-                                    <div class="pt-branch-info">
-                                        <span class="material-symbols-outlined">call</span>
+                                    <div class="pt-branch-contact-item">
+                                        <span class="material-symbols-outlined pt-branch-icon">call</span>
                                         <?php echo esc_html($branch['phone']); ?>
                                     </div>
                                 <?php endif; ?>
-                                <?php if ($branch['products']): ?>
-                                    <div class="pt-branch-info">
-                                        <span class="material-symbols-outlined">inventory</span>
-                                        <?php echo esc_html($branch['products']); ?>
+                                <?php if ($branch['address']): ?>
+                                    <div class="pt-branch-contact-item">
+                                        <span class="material-symbols-outlined pt-branch-icon">location_on</span>
+                                        <span class="pt-branch-label">العنوان:</span> <?php echo esc_html($branch['address']); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
-                        <?php endforeach; ?>
-                        <?php if ($google_maps_link): ?>
-                            <a href="<?php echo esc_url($google_maps_link); ?>" target="_blank" rel="noopener" class="pt-btn pt-btn-prim" style="margin-top:16px;display:inline-flex">
-                                <span class="material-symbols-outlined">map</span>
-                                <span>عرض على الخريطة</span>
-                            </a>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div class="pt-empty">لا توجد فروع مسجلة</div>
-                        <?php if ($meta['map_location']): ?>
-                            <div style="margin-top:16px;padding:16px;background:var(--bg);border-radius:8px">
-                                <strong>📍 الموقع:</strong> <?php echo esc_html($meta['map_location']); ?>
-                                <?php if ($google_maps_link): ?>
-                                    <a href="<?php echo esc_url($google_maps_link); ?>" target="_blank" rel="noopener" class="pt-btn pt-btn-prim" style="margin-top:12px;display:inline-flex">
-                                        <span class="material-symbols-outlined">map</span>
-                                        <span>عرض على الخريطة</span>
-                                    </a>
-                                <?php endif; ?>
+                            <?php endif; ?>
+                            
+                            <?php if ($branch['products']): ?>
+                            <div class="pt-branch-section">
+                                <h3 class="pt-branch-section-title">الخدمات المتاحة</h3>
+                                <div class="pt-branch-services-list">
+                                    <?php 
+                                    // Handle products as comma-separated string or array
+                                    $products_list = [];
+                                    if (is_string($branch['products'])) {
+                                        $products_list = array_filter(array_map('trim', explode(',', $branch['products'])));
+                                    } elseif (is_array($branch['products'])) {
+                                        $products_list = array_filter($branch['products']);
+                                    }
+                                    
+                                    if (!empty($products_list)): 
+                                        foreach ($products_list as $product): 
+                                            if (empty($product)) continue;
+                                    ?>
+                                        <div class="pt-branch-service-item"><?php echo esc_html($product); ?></div>
+                                    <?php 
+                                        endforeach;
+                                    else: 
+                                        // If it's a single string value
+                                    ?>
+                                        <div class="pt-branch-service-item"><?php echo esc_html($branch['products']); ?></div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -636,13 +639,15 @@ if (empty($branches)) {
                             <span class="pt-info-value"><?php echo esc_html($meta['score']); ?></span>
                         </div>
                     <?php endif; ?>
+                    <?php if (!empty($meta['commercial_industry'])): ?>
                     <div class="pt-info-item">
                         <span class="pt-info-label">
                             <span class="material-symbols-outlined">factory</span>
                             السجل الصناعي
                         </span>
-                        <span class="pt-info-value"><?php echo esc_html($meta['commercial_industry'] ?: 'غير متوفر'); ?></span>
+                        <span class="pt-info-value"><?php echo esc_html($meta['commercial_industry']); ?></span>
                     </div>
+                    <?php endif; ?>
                     <div class="pt-info-item">
                         <span class="pt-info-label">
                             <span class="material-symbols-outlined">business_center</span>
@@ -741,22 +746,18 @@ if (empty($branches)) {
                     <?php endif; ?>
 
                       <!-- Download PDF -->
-            <?php if (shortcode_exists('trader_download')): ?>
-            <div class="">
+            <?php 
+            // Always show PDF download button
+            $pdf_download_url = admin_url('admin-ajax.php?action=pt_trader_pdf&trader_id=' . $trader_id . '&nonce=' . wp_create_nonce('pt_trader_pdf_nonce'));
+            ?>
+            <div style="margin-top:24px">
                 <div class="pt-card-body" style="text-align:center;">
-                    <?php echo do_shortcode('[trader_download id="' . $trader_id . '" text="تحميل الملف الشخصي للتاجر"]'); ?>
-                </div>
-            </div>
-            <?php elseif ($meta['profile_pdf']): ?>
-            <div class="pt-sidebar-card">
-                <div class="pt-card-body" style="text-align:center;">
-                    <a href="<?php echo esc_url($meta['profile_pdf']); ?>" target="_blank" class="pt-btn pt-btn-prim" style="width:100%;justify-content:center;display:inline-flex;text-decoration:none">
+                    <a href="<?php echo esc_url($pdf_download_url); ?>" target="_blank" class="pt-btn pt-btn-prim" style="width:100%;justify-content:center;display:inline-flex;text-decoration:none">
                         <span class="material-symbols-outlined">download</span>
-                        <span>تحميل الملف الشخصي للتاجر</span>
+                        <span>تحميل الملف الشخصي للتاجر </span>
                     </a>
                 </div>
             </div>
-            <?php endif; ?>
                 </div>
             </div>
 

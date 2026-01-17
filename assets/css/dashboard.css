@@ -5548,6 +5548,117 @@ a.pt-seller-link:hover {
     }
 }
 
+/* Branches Section - New Design */
+.pt-branches-section {
+    margin-bottom: 32px;
+}
+
+.pt-branches-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0A4E45; /* Dark teal/green */
+    margin: 0 0 24px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #B9A779; /* Light brown underline */
+    text-align: right;
+    position: relative;
+}
+
+.pt-branch-card {
+    background: #ffffff;
+    border: 1px solid #0A4E45; /* Dark teal border */
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    text-align: right;
+    direction: rtl; /* Ensure RTL direction */
+}
+
+.pt-branch-card:last-child {
+    margin-bottom: 0;
+}
+
+.pt-branch-card-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #8B6F47; /* Medium brown */
+    margin: 0 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #B9A779; /* Light brown underline */
+    position: relative;
+    text-align: right;
+}
+
+.pt-branch-section {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.pt-branch-section:first-of-type {
+    margin-top: 0;
+}
+
+.pt-branch-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #8B6F47; /* Medium brown */
+    margin: 0 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #B9A779; /* Light brown underline */
+    position: relative;
+    text-align: right;
+}
+
+.pt-branch-contact-item {
+    font-size: 15px;
+    color: #1a1a1a;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    direction: rtl;
+    text-align: right;
+    width: 100%;
+}
+
+.pt-branch-contact-item > * {
+    direction: rtl;
+}
+
+.pt-branch-icon {
+    font-size: 20px;
+    color: #0A4E45; /* Dark teal - matching the border color */
+    flex-shrink: 0;
+}
+
+.pt-branch-label {
+    color: #5a5a5a;
+    font-weight: 500;
+}
+
+.pt-branch-services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+    text-align: right;
+    direction: rtl;
+}
+
+.pt-branch-service-item {
+    font-size: 15px;
+    color: #1a1a1a;
+    padding: 4px 0;
+    line-height: 1.6;
+    text-align: right;
+}
+
+.pt-branches-map-btn {
+    margin-top: 20px;
+    display: inline-flex;
+}
+
+/* Legacy branch styles (for backward compatibility) */
 .pt-branch {
     padding: 16px;
     border: 1px solid var(--b);
