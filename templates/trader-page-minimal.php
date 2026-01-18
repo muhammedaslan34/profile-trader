@@ -62,7 +62,7 @@ $meta_keys = [
     'commercial_industry' => ['je_trader_commercial_industry', 'commercial_industry'],
     'date_of_grant' => ['je_trader_date_of_grant_of_record', 'date_of_grant_of_record'],
     'map_location' => ['je_trader_map_location', 'map_location'],
-    'profile_pdf' => ['je_trader_profile'],
+    'profile_pdf' => ['download_profile', 'je_trader_profile', 'profile_pdf'],
     'facebook' => ['je_trader_facebook_page', 'facebook_page'],
     'instagram' => ['je_trader_instagram_page', 'instagram_page'],
     'twitter' => ['je_trader_twitter', 'twitter', 'twitter_page'],
@@ -174,6 +174,7 @@ if (!empty($branches_meta) && is_array($branches_meta)) {
                 'phone' => $branch_data['phone'] ?? $branch_data['الهاتف'] ?? '',
                 'address' => $branch_data['address'] ?? $branch_data['العنوان'] ?? '',
                 'products' => $branch_data['products'] ?? $branch_data['المنتجات'] ?? '',
+                'map_location' => $branch_data['map_location'] ?? $branch_data['الموقع_الرئيسي'] ?? '',
             ];
         }
     }
@@ -200,10 +201,32 @@ if (empty($branches)) {
                     'phone' => get_post_meta($branch_id, 'phone', true),
                     'address' => get_post_meta($branch_id, 'address', true),
                     'products' => get_post_meta($branch_id, 'products', true),
+                    'map_location' => get_post_meta($branch_id, 'map_location', true) ?: get_post_meta($branch_id, 'je_trader_map_location', true),
                 ];
             }
         }
     }
+}
+
+// Get Google Maps API key from available sources
+$google_maps_api_key = '';
+// Try Jet Engine Maps settings
+if (class_exists('Jet_Engine\Modules\Maps_Listings\Settings')) {
+    $jet_maps_settings = get_option('jet-engine-maps-settings', []);
+    if (!empty($jet_maps_settings['api_key'])) {
+        $google_maps_api_key = $jet_maps_settings['api_key'];
+    }
+}
+// Try Bricks theme settings
+if (empty($google_maps_api_key) && class_exists('Bricks\Database')) {
+    $bricks_settings = \Bricks\Database::$global_settings ?? [];
+    if (!empty($bricks_settings['apiKeyGoogleMaps'])) {
+        $google_maps_api_key = $bricks_settings['apiKeyGoogleMaps'];
+    }
+}
+// Try WordPress options
+if (empty($google_maps_api_key)) {
+    $google_maps_api_key = get_option('google_maps_api_key', '');
 }
 
 ?>
@@ -235,6 +258,17 @@ if (empty($branches)) {
                 </div>
                 <div class="pt-header-info">
                     <h1 class="pt-title"><?php echo esc_html($trader_name); ?></h1>
+                    
+                    <?php 
+                    // Get only sector taxonomy terms - Show sectors first
+                    $sector_terms = wp_get_post_terms($trader_id, 'sector', ['fields' => 'names']);
+                    if (!empty($sector_terms) && !is_wp_error($sector_terms)): ?>
+                        <div class="pt-categories">
+                            <?php foreach (array_slice($sector_terms, 0, 5) as $term): ?>
+                                <span class="pt-category"><?php echo esc_html($term); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                     
                     <?php 
                     // Get Economic Activity term
@@ -274,26 +308,28 @@ if (empty($branches)) {
                         <?php endif; ?>
                     </div>
                     <?php endif; ?>
-                    
-                    <?php 
-                    // Get only sector taxonomy terms
-                    $sector_terms = wp_get_post_terms($trader_id, 'sector', ['fields' => 'names']);
-                    if (!empty($sector_terms) && !is_wp_error($sector_terms)): ?>
-                        <div class="pt-categories">
-                            <?php foreach (array_slice($sector_terms, 0, 5) as $term): ?>
-                                <span class="pt-category"><?php echo esc_html($term); ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                    <?php if ($member_since): ?>
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <?php if ($member_since): ?>
                         <div class="pt-member-since">
                             <span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>
                             عضو منذ <?php echo esc_html($member_since); ?>
                         </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php 
+                        // Always show visit count if PT_Ad_Views class exists
+                        if (class_exists('PT_Ad_Views')): 
+                            $total_views = PT_Ad_Views::get_instance()->get_total_views($trader_id);
+                        ?>
+                        <div class="pt-visit-count" style="display: flex; align-items: center; gap: 4px; font-size: 14px; color: #0b4e45;" data-trader-id="<?php echo esc_attr($trader_id); ?>" data-initial-views="<?php echo esc_attr($total_views); ?>">
+                            <span class="material-symbols-outlined" style="font-size:18px">visibility</span>
+                            <span class="pt-views-number"><?php echo number_format_i18n($total_views); ?></span> مشاهدة
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-            <div class="pt-actions">
+            <div class="pt-actions-buttons">
                 <?php if ($meta['website']): ?>
                     <a href="<?php echo esc_url($meta['website']); ?>" target="_blank" rel="noopener" class="pt-btn pt-btn-sec">
                         <span class="material-symbols-outlined">language</span>
@@ -463,7 +499,7 @@ if (empty($branches)) {
                         الخدمات والمنتجات
                     </h2>
                     <?php if (!empty($services) && count($services) > 0): ?>
-                    <span class="pt-services-count"><?php echo count($services); ?> خدمة</span>
+                    <span class="pt-services-count"><?php echo count($services); ?> خدمات</span>
                     <?php endif; ?>
                 </div>
                 <div class="pt-card-body">
@@ -549,14 +585,107 @@ if (empty($branches)) {
                     <?php else: ?>
                         <div class="pt-empty">لا توجد صور متاحة</div>
                     <?php endif; ?>
+                    
+                    <!-- Download Profile PDF -->
+                    <?php 
+                    // Get profile PDF URL - check multiple field names
+                    $profile_pdf_url = '';
+                    $profile_pdf_value = '';
+                    
+                    // Try download_profile field first
+                    $download_profile = get_post_meta($trader_id, 'download_profile', true);
+                    if (!empty($download_profile)) {
+                        $profile_pdf_value = trim($download_profile);
+                    }
+                    
+                    // Fallback to profile_pdf from meta array
+                    if (empty($profile_pdf_value) && !empty($meta['profile_pdf'])) {
+                        $profile_pdf_value = trim($meta['profile_pdf']);
+                    }
+                    
+                    // Try je_trader_profile as fallback
+                    if (empty($profile_pdf_value)) {
+                        $je_profile = get_post_meta($trader_id, 'je_trader_profile', true);
+                        if (!empty($je_profile)) {
+                            $profile_pdf_value = trim($je_profile);
+                        }
+                    }
+                    
+                    // Process the value - could be URL or attachment ID
+                    if (!empty($profile_pdf_value)) {
+                        // Check if it's a numeric attachment ID
+                        if (is_numeric($profile_pdf_value)) {
+                            $profile_pdf_url = wp_get_attachment_url(intval($profile_pdf_value));
+                        } else {
+                            // It's a URL or string - use it directly (will be sanitized in esc_url)
+                            $profile_pdf_url = $profile_pdf_value;
+                        }
+                    }
+                    ?>
+                    <?php if (!empty($profile_pdf_url)): ?>
+                    <div class="pt-gallery-download-section" style="margin-top: <?php echo !empty($gallery_images) ? '24px' : '0'; ?>; padding-top: <?php echo !empty($gallery_images) ? '24px' : '0'; ?>; <?php echo !empty($gallery_images) ? 'border-top: 1px solid #e8e5db;' : ''; ?> text-align: center;">
+                        <a href="<?php echo esc_url($profile_pdf_url); ?>" target="_blank" rel="noopener" class="pt-btn pt-btn-prim" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                            <span class="material-symbols-outlined">download</span>
+                            <span>تحميل الملف الشخصي للشركة</span>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Branches -->
+            <!-- Main Location Map -->
+            <?php if (!empty($meta['map_location'])): ?>
+            <div class="pt-card">
+                <div class="pt-card-header">
+                    <h2 class="pt-card-title">
+                        <span class="material-symbols-outlined">place</span>
+                        الموقع الرئيسي
+                    </h2>
+                </div>
+                <div class="pt-card-body">
+                    <div class="pt-main-location-wrapper">
+                        <div class="pt-main-location-address">
+                            <span class="material-symbols-outlined" style="color: #0A4E45; font-size: 20px; margin-left: 8px;">location_on</span>
+                            <span><?php echo esc_html($meta['map_location']); ?></span>
+                        </div>
+                        <div class="pt-main-location-map-container">
+                            <?php 
+                            // Clean and encode the address
+                            $main_map_address = urlencode(trim($meta['map_location']));
+                            
+                            // Build Google Maps embed URL
+                            if (!empty($google_maps_api_key)) {
+                                // Use Google Maps Embed API with API key
+                                $main_map_url = "https://www.google.com/maps/embed/v1/place?key=" . esc_attr($google_maps_api_key) . "&q=" . $main_map_address . "&language=ar";
+                            } else {
+                                // Fallback: Use Google Maps iframe embed
+                                $main_map_url = "https://maps.google.com/maps?q=" . $main_map_address . "&output=embed&hl=ar&ie=UTF8";
+                            }
+                            ?>
+                            <iframe 
+                                width="100%" 
+                                height="400" 
+                                style="border:0; border-radius: 8px; display: block;" 
+                                loading="lazy" 
+                                allowfullscreen
+                                referrerpolicy="no-referrer-when-downgrade"
+                                src="<?php echo esc_url($main_map_url); ?>"
+                                title="<?php echo esc_attr(sprintf(__('خريطة الموقع الرئيسي - %s', 'profile-trader'), $meta['map_location'])); ?>"
+                                aria-label="<?php echo esc_attr($meta['map_location']); ?>">
+                            </iframe>
+                            <div style="margin-top: 12px; text-align: center;">
+                                <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($meta['map_location']); ?>" target="_blank" rel="noopener" style="color: #0A4E45; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span>
+                                    افتح في Google Maps
+                                </a>
+                            </div>                         
+                        </div>
+                    </div>
+                    <!-- Branches Section (Under Main Location Map) -->
             <div class="pt-branches-section">
-                <h2 class="pt-branches-title">الفروع</h2>
+                <h2 class="pt-branches-title" style="margin-top: 20px; ">الفروع</h2>
                 <?php if (!empty($branches)): ?>
-                    <?php foreach ($branches as $branch): ?>
+                    <?php foreach ($branches as $index => $branch): ?>
                         <div class="pt-branch-card">
                             <div class="pt-branch-card-name"><?php echo esc_html($branch['name'] ?: 'فرع'); ?></div>
                             
@@ -586,23 +715,31 @@ if (empty($branches)) {
                                     // Handle products as comma-separated string or array
                                     $products_list = [];
                                     if (is_string($branch['products'])) {
-                                        $products_list = array_filter(array_map('trim', explode(',', $branch['products'])));
+                                        // Strip HTML tags and split by comma
+                                        $clean_products = strip_tags($branch['products']);
+                                        $products_list = array_filter(array_map('trim', explode(',', $clean_products)));
                                     } elseif (is_array($branch['products'])) {
-                                        $products_list = array_filter($branch['products']);
+                                        $products_list = array_filter(array_map(function($p) {
+                                            return is_string($p) ? strip_tags($p) : $p;
+                                        }, $branch['products']));
                                     }
                                     
                                     if (!empty($products_list)): 
                                         foreach ($products_list as $product): 
                                             if (empty($product)) continue;
                                     ?>
-                                        <div class="pt-branch-service-item"><?php echo esc_html($product); ?></div>
+                                        <div class="pt-branch-service-item"><?php echo esc_html(trim($product)); ?></div>
                                     <?php 
                                         endforeach;
                                     else: 
-                                        // If it's a single string value
+                                        // If it's a single string value, strip HTML
+                                        $clean_product = strip_tags($branch['products']);
+                                        if (!empty($clean_product)):
                                     ?>
-                                        <div class="pt-branch-service-item"><?php echo esc_html($branch['products']); ?></div>
-                                    <?php endif; ?>
+                                        <div class="pt-branch-service-item"><?php echo esc_html(trim($clean_product)); ?></div>
+                                    <?php 
+                                        endif;
+                                    endif; ?>
                                 </div>
                             </div>
                             <?php endif; ?>
@@ -610,6 +747,11 @@ if (empty($branches)) {
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            
         </div>
 
         <!-- Sidebar -->
@@ -1057,3 +1199,82 @@ if (empty($branches)) {
     }
 })();
 </script>
+
+<?php
+// Track view for this trader
+if (class_exists('PT_Ad_Views') && $trader_id) {
+    $view_nonce = wp_create_nonce('pt_view_nonce');
+    ?>
+    <script>
+    (function() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTracking);
+        } else {
+            initTracking();
+        }
+        
+        function initTracking() {
+            var tracked = false;
+            var traderId = <?php echo intval($trader_id); ?>;
+            var nonce = '<?php echo esc_js($view_nonce); ?>';
+            var ajaxUrl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';
+            
+            function ptTrackTraderView() {
+                if (tracked) return;
+                tracked = true;
+                
+                console.log('PT Views: Tracking trader view for ID', traderId);
+                
+                var formData = new FormData();
+                formData.append('action', 'pt_track_ad_view');
+                formData.append('post_id', traderId);
+                formData.append('post_type', 'trader');
+                formData.append('nonce', nonce);
+                
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('PT Views Response:', data);
+                    if (data.success) {
+                        if (data.data && data.data.views !== undefined) {
+                            // Update view count display
+                            var visitCountEl = document.querySelector('.pt-visit-count');
+                            if (visitCountEl) {
+                                var viewsNumberEl = visitCountEl.querySelector('.pt-views-number');
+                                if (viewsNumberEl) {
+                                    var newViews = parseInt(data.data.views);
+                                    viewsNumberEl.textContent = newViews.toLocaleString('ar-EG');
+                                } else {
+                                    // Fallback if structure changed
+                                    var newViews = parseInt(data.data.views);
+                                    var formattedViews = newViews.toLocaleString('ar-EG');
+                                    visitCountEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">visibility</span> <span class="pt-views-number">' + formattedViews + '</span> مشاهدة';
+                                }
+                            }
+                        } else if (data.data && data.data.message) {
+                            console.log('PT Views Message:', data.data.message);
+                        }
+                    } else {
+                        console.error('PT Views Error:', data.data ? data.data.message : 'Unknown error');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('PT Views: Tracking error', error);
+                });
+            }
+            
+            // Track after a short delay to ensure page is fully loaded
+            setTimeout(ptTrackTraderView, 1500);
+        }
+    })();
+    </script>
+    <?php
+}
+?>

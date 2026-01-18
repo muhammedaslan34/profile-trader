@@ -238,6 +238,38 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                     </div>
                 </div>
             </div>
+            
+            <!-- Download Profile PDF -->
+            <div class="pt-form-group pt-col-half">
+                <label for="download_profile" class="pt-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <?php echo esc_html($meta_fields['download_profile']['label'] ?? 'تحميل الملف الشخصي للشركة'); ?>
+                </label>
+                <input type="url" 
+                       id="download_profile" 
+                       name="download_profile" 
+                       class="pt-input" 
+                       placeholder="أدخل رابط ملف PDF (مثال: https://example.com/profile.pdf)"
+                       value="<?php echo esc_attr($values['download_profile'] ?? ''); ?>"
+                       dir="ltr">
+                <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">أدخل رابط مباشر لملف PDF الخاص بملف الشركة الشخصي</small>
+                <?php if (!empty($values['download_profile'])): ?>
+                <div style="margin-top: 8px;">
+                    <a href="<?php echo esc_url($values['download_profile']); ?>" target="_blank" rel="noopener" style="color: #0A4E45; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                        عرض الرابط
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -919,6 +951,15 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                                    value="<?php echo esc_attr($branch['العنوان'] ?? ''); ?>">
                         </div>
                         <div class="pt-form-group pt-col-full">
+                            <label class="pt-label">الموقع الرئيسي (للعرض على الخريطة)</label>
+                            <input type="text" 
+                                   name="bracnches[<?php echo $index; ?>][map_location]" 
+                                   class="pt-input" 
+                                   placeholder="أدخل العنوان الكامل للعرض على خريطة Google Maps"
+                                   value="<?php echo esc_attr($branch['map_location'] ?? $branch['الموقع_الرئيسي'] ?? ''); ?>">
+                            <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">يمكنك ترك هذا الحقل فارغاً وسيتم استخدام العنوان أعلاه</small>
+                        </div>
+                        <div class="pt-form-group pt-col-full">
                             <label class="pt-label">المنتجات</label>
                             <textarea name="bracnches[<?php echo $index; ?>][المنتجات]" 
                                       class="pt-textarea" 
@@ -982,6 +1023,14 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                 <div class="pt-form-group pt-col-full">
                     <label class="pt-label">العنوان</label>
                     <input type="text" name="bracnches[__INDEX__][العنوان]" class="pt-input" placeholder="أدخل عنوان الفرع">
+                </div>
+                <div class="pt-form-group pt-col-full">
+                    <label class="pt-label">الموقع الرئيسي (للعرض على الخريطة)</label>
+                    <input type="text" 
+                           name="bracnches[__INDEX__][map_location]" 
+                           class="pt-input" 
+                           placeholder="أدخل العنوان الكامل للعرض على خريطة Google Maps">
+                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">يمكنك ترك هذا الحقل فارغاً وسيتم استخدام العنوان أعلاه</small>
                 </div>
                 <div class="pt-form-group pt-col-full">
                     <label class="pt-label">المنتجات</label>

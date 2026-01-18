@@ -81,17 +81,17 @@ $job_type_labels = $plugin->get_job_type_labels();
         $job_type = get_post_meta($job->ID, 'job_type', true);
         $contact_number = get_post_meta($job->ID, 'contact_number', true);
     ?>
-    <div class="pt-listing-card pt-job-card">
-        
-        <div class="pt-card-header">
-            <div class="pt-card-logo pt-job-icon">
+    <div class="pt-job-item">
+
+        <div class="pt-job-item-header">
+            <div class="pt-job-item-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                 </svg>
             </div>
-            
-            <div class="pt-card-status">
+
+            <div class="pt-job-item-status">
                 <?php
                 $status_class = '';
                 $status_text = '';
@@ -113,33 +113,50 @@ $job_type_labels = $plugin->get_job_type_labels();
                 <span class="pt-status <?php echo $status_class; ?>"><?php echo $status_text; ?></span>
             </div>
         </div>
-        
-        <div class="pt-card-body">
-            <h3 class="pt-card-title"><?php echo esc_html($job->post_title); ?></h3>
-            
+
+        <div class="pt-job-item-content">
+            <h3 class="pt-job-item-title"><?php echo esc_html($job->post_title); ?></h3>
+
             <?php if ($position): ?>
-            <p class="pt-job-position"><?php echo esc_html($position); ?></p>
+            <p class="pt-job-item-position"><?php echo esc_html($position); ?></p>
             <?php endif; ?>
-            
+
             <?php if ($job_type && isset($job_type_labels[$job_type])): ?>
-            <div class="pt-card-meta">
-                <span class="pt-job-type-badge"><?php echo esc_html($job_type_labels[$job_type]); ?></span>
+            <div class="pt-job-item-info">
+                <span class="pt-job-item-type"><?php echo esc_html($job_type_labels[$job_type]); ?></span>
             </div>
             <?php endif; ?>
-            
-            <div class="pt-card-meta">
-                <?php if ($salary_range): ?>
-                <span class="pt-meta-item">
+
+            <div class="pt-job-item-info">
+                <?php if ($salary_range): 
+                    // Clean and format salary range - remove duplicate dollar signs
+                    $salary_clean = trim($salary_range);
+                    // Remove all dollar signs (including escaped ones)
+                    $salary_clean = preg_replace('/\$+/u', '', $salary_clean);
+                    // Remove dollar signs with any whitespace around them
+                    $salary_clean = preg_replace('/\s*\$+\s*/u', ' ', $salary_clean);
+                    // Clean up multiple spaces
+                    $salary_clean = preg_replace('/\s+/u', ' ', $salary_clean);
+                    $salary_clean = trim($salary_clean);
+                    // Remove any trailing dollar signs that might remain
+                    $salary_clean = preg_replace('/\$+\s*$/u', '', $salary_clean);
+                    $salary_clean = trim($salary_clean);
+                    // Add a single dollar sign at the end if there are numbers
+                    if (preg_match('/\d/u', $salary_clean) && !empty($salary_clean)) {
+                        $salary_clean = $salary_clean . '$';
+                    }
+                ?>
+                <span class="pt-job-item-detail">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="1" x2="12" y2="23"></line>
                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                     </svg>
-                    <?php echo esc_html($salary_range); ?>
+                    <?php echo esc_html($salary_clean); ?>
                 </span>
                 <?php endif; ?>
-                
+
                 <?php if ($expirence): ?>
-                <span class="pt-meta-item">
+                <span class="pt-job-item-detail">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
@@ -148,10 +165,10 @@ $job_type_labels = $plugin->get_job_type_labels();
                 </span>
                 <?php endif; ?>
             </div>
-            
+
             <?php if ($contact_number): ?>
-            <div class="pt-card-contact">
-                <span class="pt-contact-item">
+            <div class="pt-job-item-contact">
+                <span class="pt-job-item-phone">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
@@ -160,9 +177,9 @@ $job_type_labels = $plugin->get_job_type_labels();
             </div>
             <?php endif; ?>
         </div>
-        
-        <div class="pt-card-footer">
-            <span class="pt-card-date">
+
+        <div class="pt-job-item-footer">
+            <span class="pt-job-item-date">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -171,9 +188,9 @@ $job_type_labels = $plugin->get_job_type_labels();
                 </svg>
                 <?php echo get_the_date('Y/m/d', $job); ?>
             </span>
-            
-            <div class="pt-card-actions">
-                <a href="<?php echo esc_url(add_query_arg(['tab' => 'edit-job', 'job_id' => $job->ID], get_permalink())); ?>" 
+
+            <div class="pt-job-item-actions">
+                <a href="<?php echo esc_url(add_query_arg(['tab' => 'edit-job', 'job_id' => $job->ID], get_permalink())); ?>"
                    class="pt-btn pt-btn-sm pt-btn-outline">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -181,9 +198,9 @@ $job_type_labels = $plugin->get_job_type_labels();
                     </svg>
                     تعديل
                 </a>
-                
+
                 <?php if ($job->post_status === 'publish'): ?>
-                <a href="<?php echo get_permalink($job->ID); ?>" 
+                <a href="<?php echo get_permalink($job->ID); ?>"
                    class="pt-btn pt-btn-sm pt-btn-primary" target="_blank">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

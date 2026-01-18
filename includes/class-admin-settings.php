@@ -38,6 +38,15 @@ class PT_Admin_Settings {
             'pt-connection-settings',
             [$this, 'render_settings_page']
         );
+
+        add_submenu_page(
+            'edit.php?post_type=' . PT_POST_TYPE,
+            __('الأكواد المختصرة', 'profile-trader'),
+            __('الأكواد المختصرة', 'profile-trader'),
+            'manage_options',
+            'pt-shortcodes',
+            [$this, 'render_shortcodes_page']
+        );
     }
     
     /**
@@ -471,6 +480,238 @@ class PT_Admin_Settings {
                 <p><?php _e('عندما يسجل المستخدم الدخول، يرى جميع التجار المرتبطين به بأي من هذه الطرق.', 'profile-trader'); ?></p>
             </div>
         </div>
+        <?php
+    }
+
+    /**
+     * Render shortcodes documentation page
+     */
+    public function render_shortcodes_page() {
+        ?>
+        <div class="wrap pt-admin-wrap">
+            <h1><?php _e('الأكواد المختصرة المتاحة', 'profile-trader'); ?></h1>
+            <p class="description"><?php _e('يمكنك استخدام هذه الأكواد المختصرة في أي صفحة أو مقال لعرض الوظائف والإعلانات والتجار', 'profile-trader'); ?></p>
+
+            <div class="pt-shortcodes-grid" style="display: grid; gap: 20px; margin-top: 30px;">
+
+                <!-- Job Listings Shortcode -->
+                <div class="pt-shortcode-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h2 style="margin-top: 0; color: #1d4ed8; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">💼</span>
+                        <?php _e('عرض الوظائف', 'profile-trader'); ?>
+                    </h2>
+
+                    <div class="shortcode-copy" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin: 15px 0; font-family: monospace; position: relative;">
+                        <code style="font-size: 14px;">[job_listings]</code>
+                        <button onclick="navigator.clipboard.writeText('[job_listings]')" style="position: absolute; left: 10px; top: 10px; padding: 5px 10px; background: #1d4ed8; color: white; border: none; border-radius: 4px; cursor: pointer;">نسخ</button>
+                    </div>
+
+                    <h3><?php _e('المعاملات المتاحة:', 'profile-trader'); ?></h3>
+                    <table class="widefat" style="margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th><?php _e('المعامل', 'profile-trader'); ?></th>
+                                <th><?php _e('القيمة الافتراضية', 'profile-trader'); ?></th>
+                                <th><?php _e('الخيارات', 'profile-trader'); ?></th>
+                                <th><?php _e('الوصف', 'profile-trader'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>-1 (الكل)</td>
+                                <td>أي رقم</td>
+                                <td>عدد الوظائف المعروضة</td>
+                            </tr>
+                            <tr>
+                                <td><code>status</code></td>
+                                <td>publish</td>
+                                <td>publish, pending, draft, all</td>
+                                <td>حالة الوظائف</td>
+                            </tr>
+                            <tr>
+                                <td><code>show_filters</code></td>
+                                <td>no</td>
+                                <td>yes, no</td>
+                                <td>إظهار فلاتر الحالة</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top: 20px;"><?php _e('أمثلة:', 'profile-trader'); ?></h3>
+                    <div style="background: #f8fafc; border-right: 4px solid #1d4ed8; padding: 15px; margin: 10px 0;">
+                        <p style="margin: 5px 0;"><code>[job_listings limit="6"]</code> - عرض 6 وظائف</p>
+                        <p style="margin: 5px 0;"><code>[job_listings limit="9" status="publish"]</code> - عرض 9 وظائف منشورة</p>
+                        <p style="margin: 5px 0;"><code>[job_listings limit="12" show_filters="yes"]</code> - عرض 12 وظيفة مع الفلاتر</p>
+                    </div>
+                </div>
+
+                <!-- Ads Listings Shortcode -->
+                <div class="pt-shortcode-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h2 style="margin-top: 0; color: #059669; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">📢</span>
+                        <?php _e('عرض الإعلانات', 'profile-trader'); ?>
+                    </h2>
+
+                    <div class="shortcode-copy" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin: 15px 0; font-family: monospace; position: relative;">
+                        <code style="font-size: 14px;">[ads_listings]</code>
+                        <button onclick="navigator.clipboard.writeText('[ads_listings]')" style="position: absolute; left: 10px; top: 10px; padding: 5px 10px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer;">نسخ</button>
+                    </div>
+
+                    <h3><?php _e('المعاملات المتاحة:', 'profile-trader'); ?></h3>
+                    <table class="widefat" style="margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th><?php _e('المعامل', 'profile-trader'); ?></th>
+                                <th><?php _e('القيمة الافتراضية', 'profile-trader'); ?></th>
+                                <th><?php _e('الخيارات', 'profile-trader'); ?></th>
+                                <th><?php _e('الوصف', 'profile-trader'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>-1 (الكل)</td>
+                                <td>أي رقم</td>
+                                <td>عدد الإعلانات المعروضة</td>
+                            </tr>
+                            <tr>
+                                <td><code>status</code></td>
+                                <td>publish</td>
+                                <td>publish, pending, draft</td>
+                                <td>حالة الإعلانات</td>
+                            </tr>
+                            <tr>
+                                <td><code>category</code></td>
+                                <td>فارغ (الكل)</td>
+                                <td>slug التصنيف</td>
+                                <td>تصنيف الإعلانات</td>
+                            </tr>
+                            <tr>
+                                <td><code>featured</code></td>
+                                <td>no</td>
+                                <td>yes, no</td>
+                                <td>إظهار المميزة فقط</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top: 20px;"><?php _e('أمثلة:', 'profile-trader'); ?></h3>
+                    <div style="background: #f8fafc; border-right: 4px solid #059669; padding: 15px; margin: 10px 0;">
+                        <p style="margin: 5px 0;"><code>[ads_listings limit="6"]</code> - عرض 6 إعلانات</p>
+                        <p style="margin: 5px 0;"><code>[ads_listings limit="9" featured="yes"]</code> - عرض 9 إعلانات مميزة</p>
+                        <p style="margin: 5px 0;"><code>[ads_listings limit="8" category="electronics"]</code> - عرض 8 إعلانات من تصنيف معين</p>
+                    </div>
+                </div>
+
+                <!-- Trader Listings Shortcode -->
+                <div class="pt-shortcode-card" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h2 style="margin-top: 0; color: #dc2626; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">👥</span>
+                        <?php _e('عرض التجار', 'profile-trader'); ?>
+                    </h2>
+
+                    <div class="shortcode-copy" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin: 15px 0; font-family: monospace; position: relative;">
+                        <code style="font-size: 14px;">[trader_listings_public]</code>
+                        <button onclick="navigator.clipboard.writeText('[trader_listings_public]')" style="position: absolute; left: 10px; top: 10px; padding: 5px 10px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">نسخ</button>
+                    </div>
+
+                    <h3><?php _e('المعاملات المتاحة:', 'profile-trader'); ?></h3>
+                    <table class="widefat" style="margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th><?php _e('المعامل', 'profile-trader'); ?></th>
+                                <th><?php _e('القيمة الافتراضية', 'profile-trader'); ?></th>
+                                <th><?php _e('الخيارات', 'profile-trader'); ?></th>
+                                <th><?php _e('الوصف', 'profile-trader'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>-1 (الكل)</td>
+                                <td>أي رقم</td>
+                                <td>عدد التجار المعروضين</td>
+                            </tr>
+                            <tr>
+                                <td><code>status</code></td>
+                                <td>publish</td>
+                                <td>publish, pending, draft</td>
+                                <td>حالة التجار</td>
+                            </tr>
+                            <tr>
+                                <td><code>featured</code></td>
+                                <td>no</td>
+                                <td>yes, no</td>
+                                <td>إظهار المميزين فقط</td>
+                            </tr>
+                            <tr>
+                                <td><code>company_type</code></td>
+                                <td>فارغ (الكل)</td>
+                                <td>نوع الشركة</td>
+                                <td>نوع الشركة</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top: 20px;"><?php _e('أمثلة:', 'profile-trader'); ?></h3>
+                    <div style="background: #f8fafc; border-right: 4px solid #dc2626; padding: 15px; margin: 10px 0;">
+                        <p style="margin: 5px 0;"><code>[trader_listings_public limit="6"]</code> - عرض 6 تجار</p>
+                        <p style="margin: 5px 0;"><code>[trader_listings_public limit="9" featured="yes"]</code> - عرض 9 تجار مميزين</p>
+                        <p style="margin: 5px 0;"><code>[trader_listings_public limit="8" company_type="شركة"]</code> - عرض 8 تجار من نوع معين</p>
+                    </div>
+                </div>
+
+                <!-- Usage Tips -->
+                <div class="pt-shortcode-card" style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h2 style="margin-top: 0; color: #92400e; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">💡</span>
+                        <?php _e('نصائح الاستخدام', 'profile-trader'); ?>
+                    </h2>
+
+                    <ul style="line-height: 1.8;">
+                        <li>يمكنك إضافة هذه الأكواد في أي صفحة أو مقال من محرر WordPress</li>
+                        <li>لعرض محتوى في الصفحة الرئيسية، أضف الكود المختصر في محرر الصفحة الرئيسية</li>
+                        <li>يمكنك الجمع بين عدة أكواد في نفس الصفحة</li>
+                        <li>جميع الأكواد تدعم اللغة العربية والعرض من اليمين لليسار (RTL)</li>
+                        <li>التصميم متجاوب ويعمل على جميع الأجهزة (موبايل، تابلت، كمبيوتر)</li>
+                    </ul>
+
+                    <h3 style="margin-top: 20px;"><?php _e('مثال على صفحة رئيسية كاملة:', 'profile-trader'); ?></h3>
+                    <div style="background: #fff; border: 1px solid #d97706; border-radius: 4px; padding: 15px; margin: 10px 0; font-family: monospace; direction: ltr; text-align: left;">
+                        <pre style="margin: 0; white-space: pre-wrap;">&lt;h2&gt;الوظائف المتاحة&lt;/h2&gt;
+[job_listings limit="6"]
+
+&lt;h2&gt;الإعلانات المميزة&lt;/h2&gt;
+[ads_listings limit="6" featured="yes"]
+
+&lt;h2&gt;التجار المميزون&lt;/h2&gt;
+[trader_listings_public limit="6" featured="yes"]</pre>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <style>
+            .pt-shortcodes-grid .pt-shortcode-card h3 {
+                font-size: 16px;
+                font-weight: 600;
+                margin-top: 15px;
+                margin-bottom: 10px;
+            }
+            .pt-shortcodes-grid .widefat th {
+                font-weight: 600;
+                background: #f9fafb;
+            }
+            .pt-shortcodes-grid code {
+                background: #f1f5f9;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 13px;
+                color: #1e40af;
+            }
+        </style>
         <?php
     }
 }

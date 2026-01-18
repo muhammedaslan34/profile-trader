@@ -140,6 +140,18 @@ if (!empty($listings)) {
                     <?php echo esc_html($score); ?>
                 </span>
                 <?php endif; ?>
+                
+                <?php if (class_exists('PT_Ad_Views')): 
+                    $total_views = PT_Ad_Views::get_instance()->get_total_views($listing->ID);
+                ?>
+                <span class="pt-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <?php echo number_format_i18n($total_views); ?> مشاهدة
+                </span>
+                <?php endif; ?>
             </div>
             
             <div class="pt-card-contact">

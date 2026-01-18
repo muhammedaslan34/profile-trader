@@ -162,6 +162,9 @@ class Profile_Trader {
         add_shortcode('trader_download', [$this, 'render_trader_download']);
         add_shortcode('trader_qr', [$this, 'render_trader_qr']);
         add_shortcode('ads_archive', [$this, 'render_ads_archive']);
+        add_shortcode('job_listings', [$this, 'render_job_listings']);
+        add_shortcode('ads_listings', [$this, 'render_ads_listings']);
+        add_shortcode('trader_listings_public', [$this, 'render_trader_listings_public']);
 
         // Add dashboard widgets
         add_action('wp_dashboard_setup', [$this, 'add_dashboard_widgets']);
@@ -462,6 +465,11 @@ class Profile_Trader {
             'gallary' => [
                 'label' => 'معرض الصور',
                 'type' => 'gallery',
+            ],
+            'download_profile' => [
+                'label' => 'تحميل الملف الشخصي للشركة',
+                'type' => 'url',
+                'icon' => 'download',
             ],
             'logo' => [
                 'label' => 'لوجو',
@@ -1040,6 +1048,774 @@ class Profile_Trader {
     }
 
     /**
+     * Render Job Listings Shortcode
+     * Usage: [job_listings limit="6" status="publish" columns="3"]
+     */
+    public function render_job_listings($atts) {
+        // Parse shortcode attributes
+        $atts = shortcode_atts([
+            'limit' => -1,
+            'status' => 'publish',
+            'columns' => '3',
+            'show_filters' => 'no',
+        ], $atts);
+
+        // Build query arguments
+        $args = [
+            'post_type' => 'job',
+            'posts_per_page' => intval($atts['limit']),
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ];
+
+        // Add status filter
+        if ($atts['status'] !== 'all') {
+            $args['post_status'] = sanitize_text_field($atts['status']);
+        } else {
+            $args['post_status'] = ['publish', 'pending', 'draft'];
+        }
+
+        // Get jobs
+        $jobs = get_posts($args);
+
+        // Get job type labels
+        $job_type_labels = $this->get_job_type_labels();
+
+        // Start output buffering
+        ob_start();
+
+        // Enqueue styles
+        wp_enqueue_style('pt-dashboard');
+
+        ?>
+        <div class="pt-job-listings-shortcode">
+            <?php if ($atts['show_filters'] === 'yes'): ?>
+            <div class="pt-filters">
+                <div class="pt-filter-tabs">
+                    <a href="?status=all" class="pt-filter-tab <?php echo $atts['status'] === 'all' ? 'active' : ''; ?>">الكل</a>
+                    <a href="?status=publish" class="pt-filter-tab <?php echo $atts['status'] === 'publish' ? 'active' : ''; ?>">منشور</a>
+                    <a href="?status=pending" class="pt-filter-tab <?php echo $atts['status'] === 'pending' ? 'active' : ''; ?>">قيد المراجعة</a>
+                    <a href="?status=draft" class="pt-filter-tab <?php echo $atts['status'] === 'draft' ? 'active' : ''; ?>">مسودة</a>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (empty($jobs)): ?>
+            <div class="pt-empty-state">
+                <div class="pt-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                </div>
+                <h3>لا توجد وظائف</h3>
+                <p>لا توجد وظائف متاحة حالياً</p>
+            </div>
+            <?php else: ?>
+            <div class="pt-listings-grid">
+                <?php foreach ($jobs as $job):
+                    $position = get_post_meta($job->ID, 'position', true);
+                    $salary_range = get_post_meta($job->ID, 'salary_range', true);
+                    $expirence = get_post_meta($job->ID, 'expirence', true);
+                    $job_type = get_post_meta($job->ID, 'job_type', true);
+                    $contact_number = get_post_meta($job->ID, 'contact_number', true);
+                ?>
+                <div class="pt-job-item">
+                    <div class="pt-job-item-header">
+                        <div class="pt-job-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                        </div>
+                        <div class="pt-job-item-status">
+                            <?php
+                            $status_class = '';
+                            $status_text = '';
+                            switch ($job->post_status) {
+                                case 'publish':
+                                    $status_class = 'pt-status-published';
+                                    $status_text = 'منشور';
+                                    break;
+                                case 'pending':
+                                    $status_class = 'pt-status-pending';
+                                    $status_text = 'قيد المراجعة';
+                                    break;
+                                case 'draft':
+                                    $status_class = 'pt-status-draft';
+                                    $status_text = 'مسودة';
+                                    break;
+                            }
+                            ?>
+                            <span class="pt-status <?php echo $status_class; ?>"><?php echo $status_text; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-job-item-content">
+                        <h3 class="pt-job-item-title"><?php echo esc_html($job->post_title); ?></h3>
+
+                        <?php if ($position): ?>
+                        <p class="pt-job-item-position"><?php echo esc_html($position); ?></p>
+                        <?php endif; ?>
+
+                        <?php if ($job_type && isset($job_type_labels[$job_type])): ?>
+                        <div class="pt-job-item-info">
+                            <span class="pt-job-item-type"><?php echo esc_html($job_type_labels[$job_type]); ?></span>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="pt-job-item-info">
+                            <?php if ($salary_range):
+                                $salary_clean = trim($salary_range);
+                                $salary_clean = preg_replace('/\$+/u', '', $salary_clean);
+                                $salary_clean = preg_replace('/\s*\$+\s*/u', ' ', $salary_clean);
+                                $salary_clean = preg_replace('/\s+/u', ' ', $salary_clean);
+                                $salary_clean = trim($salary_clean);
+                                $salary_clean = preg_replace('/\$+\s*$/u', '', $salary_clean);
+                                $salary_clean = trim($salary_clean);
+                                if (preg_match('/\d/u', $salary_clean) && !empty($salary_clean)) {
+                                    $salary_clean = $salary_clean . '$';
+                                }
+                            ?>
+                            <span class="pt-job-item-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                                <?php echo esc_html($salary_clean); ?>
+                            </span>
+                            <?php endif; ?>
+
+                            <?php if ($expirence): ?>
+                            <span class="pt-job-item-detail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <?php echo esc_html($expirence); ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($contact_number): ?>
+                        <div class="pt-job-item-contact">
+                            <span class="pt-job-item-phone">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                <?php echo esc_html($contact_number); ?>
+                            </span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="pt-job-item-footer">
+                        <span class="pt-job-item-date">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <?php echo get_the_date('Y/m/d', $job); ?>
+                        </span>
+
+                        <div class="pt-job-item-actions">
+                            <a href="<?php echo get_permalink($job->ID); ?>" class="pt-btn pt-btn-sm pt-btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Render Ads Listings Shortcode
+     * Usage: [ads_listings limit="6" category="" featured="no"]
+     */
+    public function render_ads_listings($atts) {
+        // Parse shortcode attributes
+        $atts = shortcode_atts([
+            'limit' => 6,
+            'category' => '',
+            'featured' => 'no',
+            'status' => 'publish',
+        ], $atts);
+
+        // Build query arguments
+        $args = [
+            'post_type' => 'ads',
+            'posts_per_page' => intval($atts['limit']),
+            'post_status' => sanitize_text_field($atts['status']),
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ];
+
+        // Add category filter if provided
+        if (!empty($atts['category'])) {
+            $args['tax_query'] = [
+                [
+                    'taxonomy' => 'ad_category',
+                    'field' => 'slug',
+                    'terms' => sanitize_text_field($atts['category'])
+                ]
+            ];
+        }
+
+        // Add featured filter
+        if ($atts['featured'] === 'yes') {
+            $args['meta_query'] = [
+                [
+                    'key' => 'is_featured',
+                    'value' => '1',
+                    'compare' => '='
+                ]
+            ];
+        }
+
+        // Get ads
+        $ads = get_posts($args);
+
+        // Start output buffering
+        ob_start();
+        ?>
+        <div class="pt-ads-archive pt-ads-shortcode" dir="rtl">
+            <div id="pt-ads-container" class="pt-ads-grid">
+                <?php if (!empty($ads)): ?>
+                    <?php foreach ($ads as $ad):
+                        $ad_id = $ad->ID;
+                        $ad_price = get_post_meta($ad_id, 'price_ads', true);
+                        $ad_location = get_post_meta($ad_id, 'ad_location', true);
+                        $contact_number = get_post_meta($ad_id, 'contact_number', true);
+                        $whatsapp = get_post_meta($ad_id, 'whatsapp', true);
+                        $ad_thumb = get_the_post_thumbnail_url($ad_id, 'medium');
+                        $short_desc = get_post_meta($ad_id, 'short_desc', true);
+                    ?>
+                    <div class="pt-ad-card">
+                        <div class="pt-ad-card-image-wrapper">
+                            <a href="<?php echo get_permalink($ad_id); ?>" class="pt-ad-card-image-link">
+                                <?php if ($ad_thumb): ?>
+                                <img src="<?php echo esc_url($ad_thumb); ?>" alt="<?php echo esc_attr($ad->post_title); ?>" class="pt-ad-card-image">
+                                <?php else: ?>
+                                <div class="pt-ad-card-image pt-no-img-placeholder">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                </div>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+                        <div class="pt-ad-card-content">
+                            <a href="<?php echo get_permalink($ad_id); ?>" class="pt-ad-card-link">
+                                <h4 class="pt-ad-card-title"><?php echo esc_html($ad->post_title); ?></h4>
+                                <?php if ($ad_price): ?>
+                                <div class="pt-ad-card-price"><?php echo esc_html($ad_price); ?></div>
+                                <?php endif; ?>
+                            </a>
+
+                            <?php if ($short_desc): ?>
+                            <div class="pt-ad-specs-grid">
+                                <div class="pt-spec-item">
+                                    <svg class="pt-spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    </svg>
+                                    <span class="pt-spec-text"><?php echo esc_html(wp_trim_words($short_desc, 3)); ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <div class="pt-ad-card-footer">
+                                <div class="pt-ad-card-meta">
+                                    <?php if ($ad_location): ?>
+                                    <span class="pt-ad-card-location">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                            <circle cx="12" cy="10" r="3"></circle>
+                                        </svg>
+                                        <span><?php echo esc_html($ad_location); ?></span>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="pt-ad-card-actions">
+                                    <?php if ($contact_number): ?>
+                                    <a href="tel:<?php echo esc_attr($contact_number); ?>" class="pt-action-btn pt-action-btn-call" onclick="event.stopPropagation();">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                        </svg>
+                                        <span>اتصال</span>
+                                    </a>
+                                    <?php endif; ?>
+                                    <?php if ($whatsapp): ?>
+                                    <a href="https://wa.me/<?php echo esc_attr(preg_replace('/[^0-9]/', '', $whatsapp)); ?>?text=<?php echo urlencode('مرحباً، أنا مهتم بالإعلان: ' . $ad->post_title); ?>" target="_blank" class="pt-action-btn pt-action-btn-message" onclick="event.stopPropagation();">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        <span>رسالة</span>
+                                    </a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="pt-empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                        <p>لا توجد إعلانات منشورة</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <style>
+        .pt-ads-shortcode {
+            font-family: 'Cairo', sans-serif;
+            --pt-primary: #0A4E45;
+            --pt-primary-dark: #0a5d61;
+            --pt-accent: #d4a853;
+            --pt-secondary: #EDEAE0;
+            --pt-border-light: #e8e5db;
+            --pt-surface: #ffffff;
+            --pt-text: #1a1a1a;
+            --pt-text-secondary: #5a5a5a;
+            --pt-text-muted: #8a8a8a;
+            --pt-radius-lg: 16px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .pt-ads-shortcode .pt-ads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .pt-ads-shortcode .pt-ad-card {
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--pt-radius-lg);
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+            border: 1px solid var(--pt-border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--pt-surface);
+        }
+
+        .pt-ads-shortcode .pt-ad-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--pt-primary);
+        }
+
+        .pt-ads-shortcode .pt-ad-card-image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: var(--pt-secondary);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-image-link {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pt-ads-shortcode .pt-ad-card:hover .pt-ad-card-image {
+            transform: scale(1.05);
+        }
+
+        .pt-ads-shortcode .pt-no-img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--pt-secondary);
+            color: var(--pt-text-muted);
+            opacity: 0.5;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-content {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-link {
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 8px;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: var(--pt-text);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color 0.2s ease;
+        }
+
+        .pt-ads-shortcode .pt-ad-card:hover .pt-ad-card-title {
+            color: var(--pt-primary);
+        }
+
+        .pt-ads-shortcode .pt-ad-card-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--pt-primary);
+            margin: 0 0 12px 0;
+        }
+
+        .pt-ads-shortcode .pt-ad-specs-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .pt-ads-shortcode .pt-spec-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pt-ads-shortcode .pt-spec-icon {
+            color: var(--pt-accent);
+            flex-shrink: 0;
+        }
+
+        .pt-ads-shortcode .pt-spec-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--pt-text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--pt-border-light);
+        }
+
+        .pt-ads-shortcode .pt-ad-card-meta {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: var(--pt-text-muted);
+            margin-bottom: 12px;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pt-ads-shortcode .pt-ad-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pt-ads-shortcode .pt-action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .pt-ads-shortcode .pt-action-btn-call {
+            background: var(--pt-primary);
+            color: #ffffff;
+            border: none;
+        }
+
+        .pt-ads-shortcode .pt-action-btn-call:hover {
+            background: var(--pt-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(13, 115, 119, 0.3);
+        }
+
+        .pt-ads-shortcode .pt-action-btn-message {
+            background: transparent;
+            color: var(--pt-primary);
+            border: 1.5px solid var(--pt-primary);
+        }
+
+        .pt-ads-shortcode .pt-action-btn-message:hover {
+            background: rgba(13, 115, 119, 0.05);
+            border-color: var(--pt-primary-dark);
+            color: var(--pt-primary-dark);
+        }
+
+        .pt-ads-shortcode .pt-empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--pt-text-muted);
+            grid-column: 1 / -1;
+        }
+
+        .pt-ads-shortcode .pt-empty-state svg {
+            margin-bottom: 20px;
+        }
+
+        .pt-ads-shortcode .pt-empty-state p {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
+            color: var(--pt-text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .pt-ads-shortcode .pt-ads-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        </style>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Render Trader Listings Shortcode
+     * Usage: [trader_listings_public limit="6" featured="no"]
+     */
+    public function render_trader_listings_public($atts) {
+        // Parse shortcode attributes
+        $atts = shortcode_atts([
+            'limit' => -1,
+            'featured' => 'no',
+            'company_type' => '',
+            'status' => 'publish',
+        ], $atts);
+
+        // Build query arguments
+        $args = [
+            'post_type' => PT_POST_TYPE,
+            'posts_per_page' => intval($atts['limit']),
+            'post_status' => sanitize_text_field($atts['status']),
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ];
+
+        // Meta query array
+        $meta_query = [];
+
+        // Add featured filter
+        if ($atts['featured'] === 'yes') {
+            $meta_query[] = [
+                'key' => 'is_featured',
+                'value' => '1',
+                'compare' => '='
+            ];
+        }
+
+        // Add company type filter
+        if (!empty($atts['company_type'])) {
+            $meta_query[] = [
+                'key' => 'company_type',
+                'value' => sanitize_text_field($atts['company_type']),
+                'compare' => '='
+            ];
+        }
+
+        // Add meta query to args if not empty
+        if (!empty($meta_query)) {
+            $args['meta_query'] = $meta_query;
+        }
+
+        // Get traders
+        $traders = get_posts($args);
+
+        // Start output buffering
+        ob_start();
+
+        // Enqueue styles
+        wp_enqueue_style('pt-dashboard');
+
+        ?>
+        <div class="pt-trader-listings-shortcode">
+            <?php if (empty($traders)): ?>
+            <div class="pt-empty-state">
+                <div class="pt-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3>لا يوجد تجار</h3>
+                <p>لا يوجد تجار متاحين حالياً</p>
+            </div>
+            <?php else: ?>
+            <div class="pt-listings-grid">
+                <?php foreach ($traders as $trader):
+                    $logo_id = get_post_meta($trader->ID, 'logo', true);
+                    $logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'medium') : '';
+                    $short_desc = get_post_meta($trader->ID, 'short_desc', true);
+                    $phone = get_post_meta($trader->ID, 'phone', true);
+                    $email = get_post_meta($trader->ID, 'email', true);
+                    $is_featured = get_post_meta($trader->ID, 'is_featured', true);
+                    $company_type = get_post_meta($trader->ID, 'company_type', true);
+                    $score = get_post_meta($trader->ID, 'score', true);
+                ?>
+                <div class="pt-listing-card <?php echo $is_featured ? 'pt-featured' : ''; ?>">
+
+                    <?php if ($is_featured): ?>
+                    <div class="pt-featured-badge">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        مميز
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="pt-card-header">
+                        <div class="pt-card-logo">
+                            <?php if ($logo_url): ?>
+                                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($trader->post_title); ?>">
+                            <?php else: ?>
+                                <div class="pt-logo-placeholder">
+                                    <?php echo mb_substr($trader->post_title, 0, 1); ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="pt-card-status">
+                            <?php
+                            $status_class = '';
+                            $status_text = '';
+                            switch ($trader->post_status) {
+                                case 'publish':
+                                    $status_class = 'pt-status-published';
+                                    $status_text = 'منشور';
+                                    break;
+                                case 'pending':
+                                    $status_class = 'pt-status-pending';
+                                    $status_text = 'قيد المراجعة';
+                                    break;
+                                case 'draft':
+                                    $status_class = 'pt-status-draft';
+                                    $status_text = 'مسودة';
+                                    break;
+                            }
+                            ?>
+                            <span class="pt-status <?php echo $status_class; ?>"><?php echo $status_text; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-card-body">
+                        <h3 class="pt-card-title"><?php echo esc_html($trader->post_title); ?></h3>
+
+                        <?php if ($short_desc): ?>
+                        <p class="pt-card-desc"><?php echo esc_html(wp_trim_words($short_desc, 15)); ?></p>
+                        <?php endif; ?>
+
+                        <?php if ($company_type): ?>
+                        <div class="pt-card-tags">
+                            <span class="pt-tag"><?php echo esc_html($company_type); ?></span>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="pt-card-meta">
+                            <?php if ($phone): ?>
+                            <span class="pt-meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                <?php echo esc_html($phone); ?>
+                            </span>
+                            <?php endif; ?>
+
+                            <?php if ($score): ?>
+                            <span class="pt-meta-item">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                <?php echo esc_html($score); ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="pt-card-footer">
+                        <span class="pt-card-date">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <?php echo get_the_date('Y/m/d', $trader); ?>
+                        </span>
+
+                        <div class="pt-card-actions">
+                            <a href="<?php echo get_permalink($trader->ID); ?>" class="pt-btn pt-btn-sm pt-btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                عرض الملف
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php
+
+        return ob_get_clean();
+    }
+
+    /**
      * Render login required message
      */
     private function render_login_required() {
@@ -1506,11 +2282,16 @@ class Profile_Trader {
 
         // Get upload type and set size limit
         $upload_type = isset($_POST['upload_type']) ? sanitize_text_field($_POST['upload_type']) : 'gallery';
-        $max_size = ($upload_type === 'logo') ? 2097152 : 10485760; // 2MB for logo, 10MB for gallery
+        $max_size = ($upload_type === 'logo') ? 2097152 : 10485760; // 2MB for logo, 10MB for gallery/pdf
 
-        // Allowed file types
-        $allowed_types = ['image/jpeg', 'image/png'];
-        $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        // Allowed file types based on upload type
+        if ($upload_type === 'pdf') {
+            $allowed_types = ['application/pdf'];
+            $allowed_extensions = ['pdf'];
+        } else {
+            $allowed_types = ['image/jpeg', 'image/png'];
+            $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        }
 
         if (!function_exists('wp_handle_upload')) {
             require_once(ABSPATH . 'wp-admin/includes/file.php');

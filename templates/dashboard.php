@@ -139,7 +139,7 @@ if (!empty($jobs)) {
     <!-- Main Content -->
     <main class="pt-main">
         <header class="pt-header">
-            <div class="pt-header-content">
+            <div class="pt-header-content-dashboard">
                 <h1 class="pt-page-title">
                     <?php
                     switch ($active_tab) {

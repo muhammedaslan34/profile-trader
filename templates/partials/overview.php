@@ -105,7 +105,7 @@ $total_jobs = count($jobs);
 <!-- Recent Listings -->
 <div class="pt-section">
     <div class="pt-section-header">
-        <h2 class="pt-section-title">آخر الإعلانات</h2>
+        <h2 class="pt-section-title">آخر السجلات</h2>
         <a href="<?php echo esc_url(add_query_arg('tab', 'listings', get_permalink())); ?>" class="pt-link">
             عرض الكل
             <svg class="pt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -164,6 +164,17 @@ $total_jobs = count($jobs);
                             <div class="pt-listing-info">
                                 <strong><?php echo esc_html($listing->post_title); ?></strong>
                                 <span><?php echo esc_html(get_post_meta($listing->ID, 'short_desc', true)); ?></span>
+                                <?php if (class_exists('PT_Ad_Views')): 
+                                    $total_views = PT_Ad_Views::get_instance()->get_total_views($listing->ID);
+                                ?>
+                                <span style="display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: #666;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <?php echo number_format_i18n($total_views); ?> مشاهدة
+                                </span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </td>

@@ -457,8 +457,8 @@ class PT_Ad_Views {
             return;
         }
 
-        wp_enqueue_style('pt-admin', PT_PLUGIN_URL . 'profile-trader/assets/css/admin.css', [], PT_VERSION);
-        wp_enqueue_script('pt-admin', PT_PLUGIN_URL . 'profile-trader/assets/js/admin.js', ['jquery'], PT_VERSION, true);
+        wp_enqueue_style('pt-admin', PT_PLUGIN_URL . 'assets/css/admin.css', [], PT_VERSION);
+        wp_enqueue_script('pt-admin', PT_PLUGIN_URL . 'assets/js/admin.js', ['jquery'], PT_VERSION, true);
 
         // Chart.js
         wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js', [], '4.4.1', true);
