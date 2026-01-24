@@ -87,15 +87,6 @@ if (!empty($jobs)) {
                 </svg>
                 <span>نظرة عامة</span>
             </a>
-            
-            <a href="<?php echo esc_url(add_query_arg('tab', 'listings', get_permalink())); ?>" 
-               class="pt-nav-item <?php echo $active_tab === 'listings' ? 'active' : ''; ?>">
-                <svg class="pt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>جميع الدلائل</span>
-                <span class="pt-badge"><?php echo count($listings); ?></span>
-            </a>
 
             <a href="<?php echo esc_url(add_query_arg('tab', 'jobs', get_permalink())); ?>"
                class="pt-nav-item <?php echo in_array($active_tab, ['jobs', 'add-job', 'edit-job']) ? 'active' : ''; ?>">
@@ -146,14 +137,11 @@ if (!empty($jobs)) {
                         case 'overview':
                             echo 'نظرة عامة';
                             break;
-                        case 'listings':
-                            echo 'جميع الدلائل';
-                            break;
                         case 'add-new':
                             echo 'إضافة دليل جديد';
                             break;
                         case 'edit':
-                            echo 'تعديل الإعلان';
+                            echo 'تعديل السجل';
                             break;
                         case 'jobs':
                             echo 'الوظائف';
@@ -193,9 +181,6 @@ if (!empty($jobs)) {
             switch ($active_tab) {
                 case 'overview':
                     include pt_get_template_path('templates/partials/overview.php');
-                    break;
-                case 'listings':
-                    include pt_get_template_path('templates/partials/listings-list.php');
                     break;
                 case 'add-new':
                     include pt_get_template_path('templates/partials/edit-form.php');

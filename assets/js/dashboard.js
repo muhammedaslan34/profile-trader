@@ -81,6 +81,20 @@
             $(document).on('input', '#pt-zoom-slider', this.handleZoomSlider.bind(this));
             $(document).on('click', '.pt-zoom-btn[data-zoom="-0.1"]', this.handleZoomOut.bind(this));
             $(document).on('click', '.pt-zoom-btn[data-zoom="0.1"]', this.handleZoomIn.bind(this));
+
+            // Contact button toggle
+            $(document).on('click', '.pt-contact-btn', this.toggleContactIcons.bind(this));
+            $(document).on('click', '.pt-contact-modal-close, .pt-contact-modal-overlay', this.closeContactModal.bind(this));
+            $(document).on('click', function(e) {
+                // Close modal when clicking outside
+                if ($(e.target).hasClass('pt-contact-modal-overlay')) {
+                    const $modal = $(e.target).closest('.pt-contact-modal');
+                    $modal.animate({ opacity: 0 }, 200, function() {
+                        $modal.css('display', 'none');
+                    });
+                    $('body').css('overflow', '');
+                }
+            });
         },
 
         /**
@@ -681,26 +695,88 @@
             
             const $item = $(e.currentTarget).closest('.pt-repeater-item');
             const $repeater = $item.closest('.pt-repeater');
+            const isBranch = $item.hasClass('pt-branch-item');
+            const isService = $repeater.attr('id') === 'services-repeater';
             
             // Don't remove if it's the last item for services
-            if ($repeater.attr('id') === 'services-repeater' && $repeater.find('.pt-repeater-item').length <= 1) {
+            if (isService && $repeater.find('.pt-repeater-item').length <= 1) {
                 return;
             }
             
-            if (confirm(ptAjax.strings.confirm_delete)) {
-                // Remove phone inputs from tracking
-                $item.find('.pt-phone-input').each(function() {
-                    const input = this;
-                    PTDashboard.phoneInputs = PTDashboard.phoneInputs.filter(p => p.input !== input);
-                });
-                
-                $item.slideUp(200, function() {
-                    $(this).remove();
-                    // Reindex remaining items
-                    const repeaterType = $repeater.attr('id').replace('-repeater', '');
-                    PTDashboard.reindexRepeater(repeaterType);
-                });
+            // For branches and services, show custom modal; for others, use native confirm
+            if (isBranch || isService) {
+                this.showDeleteBranchModal($item, $repeater);
+            } else {
+                if (confirm(ptAjax.strings.confirm_delete)) {
+                    this.deleteRepeaterItem($item, $repeater);
+                }
             }
+        },
+
+        /**
+         * Show delete branch confirmation modal
+         */
+        showDeleteBranchModal: function($item, $repeater) {
+            const self = this;
+            const $modal = $('#pt-delete-branch-modal');
+            
+            // Store item and repeater for deletion callback
+            $modal.data('item', $item);
+            $modal.data('repeater', $repeater);
+            
+            // Show modal with flex display for proper centering
+            $modal.css({
+                'display': 'flex',
+                'opacity': '0'
+            }).animate({
+                'opacity': '1'
+            }, 200);
+            $('body').css('overflow', 'hidden');
+            
+            // Handle OK button
+            $modal.find('.pt-confirm-ok').off('click.deleteBranch').on('click.deleteBranch', function() {
+                self.deleteRepeaterItem($item, $repeater);
+                self.closeDeleteBranchModal();
+            });
+            
+            // Handle Cancel button and overlay
+            $modal.find('.pt-confirm-cancel, .pt-confirm-modal-overlay').off('click.deleteBranch').on('click.deleteBranch', function() {
+                self.closeDeleteBranchModal();
+            });
+        },
+
+        /**
+         * Close delete branch modal
+         */
+        closeDeleteBranchModal: function() {
+            const $modal = $('#pt-delete-branch-modal');
+            $modal.animate({
+                'opacity': '0'
+            }, 200, function() {
+                $modal.css('display', 'none');
+            });
+            $('body').css('overflow', '');
+            
+            // Clean up event handlers
+            $modal.find('.pt-confirm-ok, .pt-confirm-cancel, .pt-confirm-modal-overlay').off('click.deleteBranch');
+        },
+
+        /**
+         * Delete repeater item (actual deletion logic)
+         */
+        deleteRepeaterItem: function($item, $repeater) {
+            // Remove phone inputs from tracking
+            $item.find('.pt-phone-input').each(function() {
+                const input = this;
+                PTDashboard.phoneInputs = PTDashboard.phoneInputs.filter(p => p.input !== input);
+            });
+            
+            $item.slideUp(200, function() {
+                $(this).remove();
+                // Reindex remaining items
+                const repeaterType = $repeater.attr('id').replace('-repeater', '');
+                PTDashboard.reindexRepeater(repeaterType);
+            });
         },
 
         /**
@@ -720,6 +796,56 @@
                     }
                 });
             });
+        },
+
+        /**
+         * Toggle contact modal
+         */
+        toggleContactIcons: function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const $btn = $(e.currentTarget);
+            const modalId = $btn.data('modal-id');
+            const $modal = $('#' + modalId);
+            
+            if ($modal.length) {
+                // Close all other modals
+                $('.pt-contact-modal').not($modal).each(function() {
+                    $(this).animate({ opacity: 0 }, 200, function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('body').css('overflow', '');
+                });
+                
+                // Toggle current modal
+                if ($modal.is(':visible')) {
+                    $modal.animate({ opacity: 0 }, 200, function() {
+                        $modal.css('display', 'none');
+                    });
+                    $('body').css('overflow', '');
+                } else {
+                    $modal.css({
+                        'display': 'flex',
+                        'opacity': '0'
+                    }).animate({ opacity: 1 }, 200);
+                    $('body').css('overflow', 'hidden');
+                }
+            }
+        },
+
+        /**
+         * Close contact modal
+         */
+        closeContactModal: function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const $modal = $(e.currentTarget).closest('.pt-contact-modal');
+            $modal.animate({ opacity: 0 }, 200, function() {
+                $modal.css('display', 'none');
+            });
+            $('body').css('overflow', '');
         },
 
         /**
@@ -915,9 +1041,9 @@
          */
         validateFile: function(file, maxSize) {
             // Check file type
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/svg+xml', 'image/webp'];
             if (!allowedTypes.includes(file.type)) {
-                return 'نوع الملف غير مدعوم. يرجى رفع صور بصيغة JPG أو PNG فقط';
+                return 'نوع الملف غير مدعوم. يرجى رفع صور بصيغة JPG، PNG، SVG أو WebP فقط';
             }
 
             // Check file size
@@ -1917,11 +2043,11 @@
                 if (!file) return;
                 
                 // Validate file
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/svg+xml', 'image/webp'];
                 const maxSize = 2097152; // 2MB
                 
                 if (!allowedTypes.includes(file.type)) {
-                    self.showAvatarError('نوع الملف غير مدعوم. يرجى رفع صور بصيغة JPG أو PNG فقط');
+                    self.showAvatarError('نوع الملف غير مدعوم. يرجى رفع صور بصيغة JPG، PNG، SVG أو WebP فقط');
                     return;
                 }
                 

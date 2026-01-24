@@ -144,6 +144,17 @@ class Profile_Trader {
 
         // Filter avatar to use custom uploaded avatar
         add_filter('get_avatar_data', [$this, 'filter_avatar_data'], 10, 2);
+        add_filter('upload_mimes', [$this, 'allow_svg_uploads'], 10, 1);
+        add_filter('wp_check_filetype_and_ext', [$this, 'fix_svg_mime_type'], 10, 5);
+        add_filter('wp_generate_attachment_metadata', [$this, 'skip_svg_metadata'], 10, 2);
+        add_filter('wp_handle_upload_prefilter', [$this, 'bypass_svg_sanitization'], 10, 1);
+        // Bypass Bricks theme SVG sanitization
+        add_filter('bricks/svg/bypass_sanitization', '__return_true', 10, 2);
+        // Allow additional SVG tags and attributes for Bricks sanitizer (if not bypassed)
+        add_filter('bricks/svg/allowed_tags', [$this, 'allow_additional_svg_tags'], 10, 1);
+        add_filter('bricks/svg/allowed_attributes', [$this, 'allow_additional_svg_attributes'], 10, 1);
+        // Disable HappyFiles Pro SVG sanitization
+        update_option('happyfiles_disable_svg_sanitization', true);
 
         // Normalize gallery meta field to always return string format for JetEngine/Bricks compatibility
         add_filter('get_post_metadata', [$this, 'normalize_gallery_meta'], 10, 4);
@@ -165,6 +176,8 @@ class Profile_Trader {
         add_shortcode('job_listings', [$this, 'render_job_listings']);
         add_shortcode('ads_listings', [$this, 'render_ads_listings']);
         add_shortcode('trader_listings_public', [$this, 'render_trader_listings_public']);
+        add_shortcode('pt_contact_button', [$this, 'render_contact_button']);
+        add_shortcode('pt_investment_button', [$this, 'render_investment_button']);
 
         // Add dashboard widgets
         add_action('wp_dashboard_setup', [$this, 'add_dashboard_widgets']);
@@ -1089,6 +1102,11 @@ class Profile_Trader {
 
         ?>
         <div class="pt-job-listings-shortcode">
+            <!-- Contact Button for Training Courses -->
+            <div class="pt-job-listings-contact-btn" style="text-align: center; margin-bottom: 30px;">
+                <?php echo do_shortcode('[pt_contact_button text="انشر دورتك التدريبية"]'); ?>
+            </div>
+            
             <?php if ($atts['show_filters'] === 'yes'): ?>
             <div class="pt-filters">
                 <div class="pt-filter-tabs">
@@ -1301,6 +1319,26 @@ class Profile_Trader {
                         $whatsapp = get_post_meta($ad_id, 'whatsapp', true);
                         $ad_thumb = get_the_post_thumbnail_url($ad_id, 'medium');
                         $short_desc = get_post_meta($ad_id, 'short_desc', true);
+                        
+                        // Get related trader
+                        $trader_id = intval(get_post_meta($ad_id, '_pt_trader_id', true));
+                        if (!$trader_id) {
+                            // Fallback to trader_link for existing ads
+                            $trader_link = get_post_meta($ad_id, 'trader_link', true);
+                            if (is_numeric($trader_link)) {
+                                $trader_id = intval($trader_link);
+                            }
+                        }
+                        $trader = null;
+                        $trader_permalink = '';
+                        if ($trader_id > 0) {
+                            $trader = get_post($trader_id);
+                            if ($trader && $trader->post_type === 'trader') {
+                                $trader_permalink = get_permalink($trader_id);
+                            } else {
+                                $trader = null;
+                            }
+                        }
                     ?>
                     <div class="pt-ad-card">
                         <div class="pt-ad-card-image-wrapper">
@@ -1326,14 +1364,15 @@ class Profile_Trader {
                                 <?php endif; ?>
                             </a>
 
-                            <?php if ($short_desc): ?>
-                            <div class="pt-ad-specs-grid">
-                                <div class="pt-spec-item">
-                                    <svg class="pt-spec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <?php if ($trader): ?>
+                            <div class="pt-ad-trader-info">
+                                <a href="<?php echo esc_url($trader_permalink); ?>" class="pt-ad-trader-link">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
                                     </svg>
-                                    <span class="pt-spec-text"><?php echo esc_html(wp_trim_words($short_desc, 3)); ?></span>
-                                </div>
+                                    <span><?php echo esc_html($trader->post_title); ?></span>
+                                </a>
                             </div>
                             <?php endif; ?>
 
@@ -1522,6 +1561,39 @@ class Profile_Trader {
             font-size: 13px;
             font-weight: 500;
             color: var(--pt-text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .pt-ads-shortcode .pt-ad-trader-info {
+            margin: 12px 0;
+            padding: 8px 0;
+            border-top: 1px solid var(--pt-border-light);
+            border-bottom: 1px solid var(--pt-border-light);
+        }
+
+        .pt-ads-shortcode .pt-ad-trader-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--pt-text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .pt-ads-shortcode .pt-ad-trader-link:hover {
+            color: var(--pt-primary);
+        }
+
+        .pt-ads-shortcode .pt-ad-trader-link svg {
+            flex-shrink: 0;
+            color: var(--pt-accent);
+        }
+
+        .pt-ads-shortcode .pt-ad-trader-link span {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -2014,7 +2086,7 @@ class Profile_Trader {
         wp_send_json_success([
             'message' => __('تم حفظ البيانات بنجاح', 'profile-trader'),
             'post_id' => $post_id,
-            'redirect' => add_query_arg(['tab' => 'listings'], get_permalink(get_page_by_path('trader-dashboard'))),
+            'redirect' => add_query_arg(['tab' => 'overview'], get_permalink(get_page_by_path('trader-dashboard'))),
         ]);
     }
     
@@ -2289,8 +2361,8 @@ class Profile_Trader {
             $allowed_types = ['application/pdf'];
             $allowed_extensions = ['pdf'];
         } else {
-            $allowed_types = ['image/jpeg', 'image/png'];
-            $allowed_extensions = ['jpg', 'jpeg', 'png'];
+            $allowed_types = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
         }
 
         if (!function_exists('wp_handle_upload')) {
@@ -2431,11 +2503,16 @@ class Profile_Trader {
             return __('امتداد الملف غير مدعوم. يرجى رفع صور بصيغة JPG أو PNG فقط', 'profile-trader');
         }
 
-        // Verify it's actually an image
-        $image_info = @getimagesize($file['tmp_name']);
-        if ($image_info === false) {
-            return __('الملف ليس صورة صالحة', 'profile-trader');
+        // Verify it's actually an image (skip for SVG and WebP files as they need special handling)
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if ($file_ext !== 'svg' && $file_ext !== 'webp') {
+            $image_info = @getimagesize($file['tmp_name']);
+            if ($image_info === false) {
+                return __('الملف ليس صورة صالحة', 'profile-trader');
+            }
         }
+        // For SVG and WebP files, skip getimagesize() check
+        // WordPress and MIME type validation will handle the rest
 
         return false; // No error
     }
@@ -2452,6 +2529,12 @@ class Profile_Trader {
         
         if (!$file_path || !file_exists($file_path)) {
             return;
+        }
+        
+        // Check MIME type - skip SVG files as they are vector graphics and can't be resized
+        $mime_type = wp_check_filetype($file_path)['type'];
+        if ($mime_type === 'image/svg+xml') {
+            return; // SVG files should be kept as-is
         }
         
         // Get image editor
@@ -3767,6 +3850,329 @@ JS;
                 }
             }
         }
+    }
+
+    /**
+     * Allow SVG file uploads in WordPress
+     * 
+     * @param array $mimes Existing mime types
+     * @return array Modified mime types
+     */
+    public function allow_svg_uploads($mimes) {
+        $mimes['svg'] = 'image/svg+xml';
+        $mimes['svgz'] = 'image/svg+xml';
+        return $mimes;
+    }
+
+    /**
+     * Fix SVG MIME type detection for WordPress
+     * 
+     * @param array $data File data
+     * @param string $file Full path to the file
+     * @param string $filename The name of the file
+     * @param array $mimes Array of mime types keyed by their file extension regex
+     * @param string|false $real_mime The actual mime type or false if the type cannot be determined
+     * @return array Modified file data
+     */
+    public function fix_svg_mime_type($data, $file, $filename, $mimes, $real_mime = false) {
+        // If file extension is svg
+        if (strpos($filename, '.svg') !== false) {
+            // If we're uploading via media_handle_upload, we need to fix the MIME type
+            if ($real_mime === false || $real_mime === 'text/plain' || $real_mime === 'text/html') {
+                $data['ext'] = 'svg';
+                $data['type'] = 'image/svg+xml';
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Skip image metadata generation for SVG files
+     * 
+     * @param array $metadata Attachment metadata
+     * @param int $attachment_id Attachment ID
+     * @return array Modified metadata
+     */
+    public function skip_svg_metadata($metadata, $attachment_id) {
+        $file = get_attached_file($attachment_id);
+        if ($file && pathinfo($file, PATHINFO_EXTENSION) === 'svg') {
+            // Return minimal metadata for SVG files
+            return [
+                'width' => 0,
+                'height' => 0,
+                'file' => basename($file),
+            ];
+        }
+        return $metadata;
+    }
+
+    /**
+     * Bypass WordPress sanitization for SVG files
+     * 
+     * @param array $file File data from wp_handle_upload_prefilter
+     * @return array Modified file data
+     */
+    public function bypass_svg_sanitization($file) {
+        // Check if this is an SVG file
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        
+        if ($file_ext === 'svg' || (isset($file['type']) && $file['type'] === 'image/svg+xml')) {
+            // Remove any sanitization errors for SVG files
+            if (isset($file['error']) && $file['error'] !== UPLOAD_ERR_OK) {
+                // Only bypass if it's a sanitization-related error
+                $error_message = is_string($file['error']) ? $file['error'] : '';
+                if (!empty($error_message) && (
+                    strpos($error_message, 'sanitization') !== false ||
+                    strpos($error_message, 'sanitize') !== false ||
+                    strpos($error_message, 'sanitized') !== false ||
+                    strpos($error_message, 'not allowed') !== false ||
+                    strpos($error_message, 'verify the SVG') !== false ||
+                    strpos($error_message, 'Please verify') !== false ||
+                    strpos($error_message, "couldn't be sanitized") !== false ||
+                    strpos($error_message, "couldn't be sanitised") !== false ||
+                    strpos($error_message, 'security reasons') !== false
+                )) {
+                    // Clear the error to allow upload
+                    $file['error'] = UPLOAD_ERR_OK;
+                }
+            }
+        }
+        
+        return $file;
+    }
+
+    /**
+     * Allow additional SVG tags for Bricks sanitizer
+     * 
+     * @param array $tags Allowed SVG tags
+     * @return array Modified tags list
+     */
+    public function allow_additional_svg_tags($tags) {
+        // Add common SVG tags that might be in user files
+        $additional_tags = ['defs', 'style', 'g', 'text', 'tspan', 'polygon', 'path', 'circle', 'line'];
+        foreach ($additional_tags as $tag) {
+            if (!in_array($tag, $tags)) {
+                $tags[] = $tag;
+            }
+        }
+        return $tags;
+    }
+
+    /**
+     * Allow additional SVG attributes for Bricks sanitizer
+     * 
+     * @param array $attributes Allowed SVG attributes
+     * @return array Modified attributes list
+     */
+    public function allow_additional_svg_attributes($attributes) {
+        // Add common SVG attributes that might be in user files
+        $additional_attrs = [
+            'data-name',
+            'xmlns',
+            'viewBox',
+            'transform',
+            'class',
+            'id',
+            'x',
+            'y',
+            'x1',
+            'y1',
+            'x2',
+            'y2',
+            'cx',
+            'cy',
+            'r',
+            'd',
+            'points',
+            'fill',
+            'stroke',
+            'stroke-width',
+            'stroke-miterlimit',
+            'font-family',
+            'font-size'
+        ];
+        foreach ($additional_attrs as $attr) {
+            if (!in_array($attr, $attributes)) {
+                $attributes[] = $attr;
+            }
+        }
+        return $attributes;
+    }
+
+    /**
+     * Render Contact Button Shortcode
+     * Usage: [pt_contact_button text="انشر اعلانك"]
+     * 
+     * @param array $atts Shortcode attributes
+     * @return string HTML output
+     */
+    public function render_contact_button($atts) {
+        $atts = shortcode_atts([
+            'text' => 'اتصل بنا',
+        ], $atts);
+
+        $whatsapp_url = 'https://wa.me/+963998109724';
+        $phone_number = '+963998109724';
+        $email = 'info@btjgroups.com';
+        $email_url = 'mailto:' . esc_attr($email);
+        $unique_id = uniqid('pt-contact-');
+
+        // Determine message based on button text
+        $message = 'تواصل معنا';
+        if (strpos($atts['text'], 'دورتك التدريبية') !== false || strpos($atts['text'], 'دورة') !== false) {
+            $message = 'لنشر دورتك التدريبية تواصل معنا';
+        } elseif (strpos($atts['text'], 'اعلانك') !== false || strpos($atts['text'], 'إعلانك') !== false) {
+            $message = 'لنشر اعلانك يرجى التواصل معنا';
+        }
+
+        ob_start();
+        ?>
+        <div class="pt-contact-button-wrapper" dir="rtl">
+            <button type="button" class="pt-contact-btn" data-modal-id="<?php echo esc_attr($unique_id); ?>">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span><?php echo esc_html($atts['text']); ?></span>
+            </button>
+            
+            <!-- Contact Modal -->
+            <div id="<?php echo esc_attr($unique_id); ?>" class="pt-contact-modal" style="display: none;">
+                <div class="pt-contact-modal-overlay"></div>
+                <div class="pt-contact-modal-content">
+                    <button type="button" class="pt-contact-modal-close" aria-label="إغلاق">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    
+                    <div class="pt-contact-modal-body">
+                        <p class="pt-contact-modal-message"><?php echo esc_html($message); ?></p>
+                        
+                        <div class="pt-contact-columns">
+                            <!-- Email Column -->
+                            <div class="pt-contact-column pt-email-column">
+                                <div class="pt-contact-column-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="pt-contact-column-info">
+                                    <?php echo esc_html($email); ?>
+                                </div>
+                                <a href="<?php echo esc_url($email_url); ?>" class="pt-contact-column-btn pt-email-column-btn">
+                                    تواصل عبر الايميل
+                                </a>
+                            </div>
+                            
+                            <!-- WhatsApp Column -->
+                            <div class="pt-contact-column pt-whatsapp-column">
+                                <div class="pt-contact-column-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                    </svg>
+                                </div>
+                                <div class="pt-contact-column-info">
+                                    <?php echo esc_html($phone_number); ?>
+                                </div>
+                                <a href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener" class="pt-contact-column-btn pt-whatsapp-column-btn">
+                                    تواصل عبر الواتساب
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Render Investment Button Shortcode
+     * Usage: [pt_investment_button text="تقديم فرصة استثمار"]
+     * 
+     * @param array $atts Shortcode attributes
+     * @return string HTML output
+     */
+    public function render_investment_button($atts) {
+        $atts = shortcode_atts([
+            'text' => 'تقديم فرصة استثمار',
+        ], $atts);
+
+        $whatsapp_url = 'https://wa.me/+963998109724';
+        $phone_number = '+963998109724';
+        $email = 'info@btjgroups.com';
+        $email_url = 'mailto:' . esc_attr($email);
+        $unique_id = uniqid('pt-investment-');
+
+        ob_start();
+        ?>
+        <div class="pt-contact-button-wrapper" dir="rtl">
+            <button type="button" class="pt-contact-btn" data-modal-id="<?php echo esc_attr($unique_id); ?>">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span><?php echo esc_html($atts['text']); ?></span>
+            </button>
+            
+            <!-- Investment Contact Modal -->
+            <div id="<?php echo esc_attr($unique_id); ?>" class="pt-contact-modal" style="display: none;">
+                <div class="pt-contact-modal-overlay"></div>
+                <div class="pt-contact-modal-content">
+                    <button type="button" class="pt-contact-modal-close" aria-label="إغلاق">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    
+                    <div class="pt-contact-modal-body">
+                        <p class="pt-contact-modal-message">
+                            لنشر فرصتك الاستثمارية سيتوجب رسوم عليها
+                        </p>
+                        
+                        <div class="pt-contact-columns">
+                            <!-- Email Column -->
+                            <div class="pt-contact-column pt-email-column">
+                                <div class="pt-contact-column-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="pt-contact-column-info">
+                                    <?php echo esc_html($email); ?>
+                                </div>
+                                <a href="<?php echo esc_url($email_url); ?>" class="pt-contact-column-btn pt-email-column-btn">
+                                    تواصل عبر الايميل
+                                </a>
+                            </div>
+                            
+                            <!-- WhatsApp Column -->
+                            <div class="pt-contact-column pt-whatsapp-column">
+                                <div class="pt-contact-column-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                    </svg>
+                                </div>
+                                <div class="pt-contact-column-info">
+                                    <?php echo esc_html($phone_number); ?>
+                                </div>
+                                <a href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener" class="pt-contact-column-btn pt-whatsapp-column-btn">
+                                    تواصل عبر الواتساب
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }
 

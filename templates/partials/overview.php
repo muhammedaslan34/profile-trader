@@ -105,13 +105,7 @@ $total_jobs = count($jobs);
 <!-- Recent Listings -->
 <div class="pt-section">
     <div class="pt-section-header">
-        <h2 class="pt-section-title">آخر السجلات</h2>
-        <a href="<?php echo esc_url(add_query_arg('tab', 'listings', get_permalink())); ?>" class="pt-link">
-            عرض الكل
-            <svg class="pt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        </a>
+        <h2 class="pt-section-title">سجلاتي التجارية</h2>
     </div>
     
     <?php if (empty($listings)): ?>
@@ -136,7 +130,7 @@ $total_jobs = count($jobs);
         <table class="pt-listings-table">
             <thead>
                 <tr>
-                    <th>الإعلان</th>
+                    <th>السجل التجاري</th>
                     <th>الحالة</th>
                     <th>التاريخ</th>
                     <th>إجراءات</th>
@@ -150,7 +144,7 @@ $total_jobs = count($jobs);
                     $logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'thumbnail') : '';
                 ?>
                 <tr>
-                    <td data-label="الإعلان">
+                    <td data-label="السجل التجاري">
                         <div class="pt-listing-cell">
                             <div class="pt-listing-thumb">
                                 <?php if ($logo_url): ?>

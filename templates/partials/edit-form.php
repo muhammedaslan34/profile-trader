@@ -108,25 +108,14 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                           rows="6"><?php echo $is_edit ? esc_textarea($listing->post_content) : ''; ?></textarea>
             </div>
             
-            <!-- Profile -->
-            <div class="pt-form-group pt-col-full">
-                <label for="profile" class="pt-label">
-                    <?php echo esc_html($meta_fields['profile']['label']); ?>
-                </label>
-                <input type="text" 
-                       id="profile" 
-                       name="profile" 
-                       class="pt-input" 
-                       placeholder="ادخل رابط تحميل ملفك"
-                       value="<?php echo esc_attr($values['profile'] ?? ''); ?>">
-            </div>
+          
             
             <!-- Logo -->
             <div class="pt-form-group pt-col-half">
                 <label class="pt-label"><?php echo esc_html($meta_fields['logo']['label']); ?></label>
                 <div class="pt-media-upload" data-field="logo" data-upload-type="logo" data-max-size="2097152">
                     <input type="hidden" name="logo" value="<?php echo esc_attr($values['logo'] ?? ''); ?>">
-                    <input type="file" class="pt-file-input" accept="image/png,image/jpeg,image/jpg" style="display:none" data-field="logo">
+                    <input type="file" class="pt-file-input" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp" style="display:none" data-field="logo">
 
                     <?php
                     $logo_url = !empty($values['logo']) ? wp_get_attachment_image_url($values['logo'], 'medium') : '';
@@ -160,7 +149,7 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                         </div>
                         <div class="pt-dropzone-text">
                             <span class="pt-dropzone-title">انقر للتحميل <span class="pt-dropzone-hint">أو اسحب وأفلت</span></span>
-                            <span class="pt-dropzone-formats">PNG, JPG, JPEG (الحد الأقصى: 2 ميجابايت)</span>
+                            <span class="pt-dropzone-formats">PNG, JPG, JPEG, SVG, WebP (الحد الأقصى: 2 ميجابايت)</span>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -319,126 +308,6 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                           placeholder="ما هي رؤية شركتكم للمستقبل؟"
                           rows="3"><?php echo esc_textarea($values['vision'] ?? ''); ?></textarea>
             </div>
-        </div>
-    </div>
-
-    <!-- Key Statistics Section -->
-    <div class="pt-form-section">
-        <div class="pt-section-header">
-            <h2 class="pt-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                الإحصائيات الرئيسية
-            </h2>
-            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-stat-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                إضافة إحصائية
-            </button>
-        </div>
-
-        <div class="pt-repeater pt-stats-repeater" id="key_statistics-repeater">
-            <?php
-            $stats = $values['key_statistics'] ?? [];
-            if (!is_array($stats)) $stats = [];
-
-            if (!empty($stats)):
-            foreach ($stats as $index => $stat):
-            ?>
-            <div class="pt-repeater-item pt-stat-item-row" data-index="<?php echo $index; ?>">
-                <div class="pt-form-grid pt-form-grid-stats">
-                    <div class="pt-form-group">
-                        <label class="pt-label">الرقم</label>
-                        <input type="text"
-                               name="key_statistics[<?php echo $index; ?>][stat_number]"
-                               class="pt-input"
-                               placeholder="مثال: +500"
-                               value="<?php echo esc_attr($stat['stat_number'] ?? ''); ?>">
-                    </div>
-                    <div class="pt-form-group">
-                        <label class="pt-label">الوصف</label>
-                        <input type="text"
-                               name="key_statistics[<?php echo $index; ?>][stat_label]"
-                               class="pt-input"
-                               placeholder="مثال: عميل سعيد"
-                               value="<?php echo esc_attr($stat['stat_label'] ?? ''); ?>">
-                    </div>
-                    <div class="pt-form-group">
-                        <label class="pt-label">الأيقونة</label>
-                        <select name="key_statistics[<?php echo $index; ?>][stat_icon]" class="pt-select">
-                            <option value="calendar_month" <?php selected($stat['stat_icon'] ?? '', 'calendar_month'); ?>>سنوات الخبرة</option>
-                            <option value="groups" <?php selected($stat['stat_icon'] ?? '', 'groups'); ?>>العملاء</option>
-                            <option value="handshake" <?php selected($stat['stat_icon'] ?? '', 'handshake'); ?>>الشركاء</option>
-                            <option value="workspace_premium" <?php selected($stat['stat_icon'] ?? '', 'workspace_premium'); ?>>الجوائز</option>
-                            <option value="verified" <?php selected($stat['stat_icon'] ?? '', 'verified'); ?>>المشاريع</option>
-                            <option value="star" <?php selected($stat['stat_icon'] ?? '', 'star'); ?>>نجمة</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="button" class="pt-remove-repeater-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-            </div>
-            <?php
-            endforeach;
-            endif;
-            ?>
-        </div>
-    </div>
-
-    <!-- Highlights Section -->
-    <div class="pt-form-section">
-        <div class="pt-section-header">
-            <h2 class="pt-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                النقاط المميزة
-            </h2>
-            <button type="button" class="pt-btn pt-btn-sm pt-btn-outline pt-add-highlight-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                إضافة نقطة
-            </button>
-        </div>
-
-        <div class="pt-repeater pt-highlights-repeater" id="about_highlights-repeater">
-            <?php
-            $highlights = $values['about_highlights'] ?? [];
-            if (!is_array($highlights)) $highlights = [];
-
-            if (!empty($highlights)):
-            foreach ($highlights as $index => $item):
-            ?>
-            <div class="pt-repeater-item pt-highlight-item-row" data-index="<?php echo $index; ?>">
-                <div class="pt-repeater-content">
-                    <input type="text"
-                           name="about_highlights[<?php echo $index; ?>][highlight_text]"
-                           class="pt-input"
-                           placeholder="نقطة مميزة عن شركتكم"
-                           value="<?php echo esc_attr($item['highlight_text'] ?? ''); ?>">
-                </div>
-                <button type="button" class="pt-remove-repeater-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-            </div>
-            <?php
-            endforeach;
-            endif;
-            ?>
         </div>
     </div>
 
@@ -988,10 +857,10 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                 <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            <?php echo $is_edit ? 'حفظ التغييرات' : 'نشر الإعلان'; ?>
+            <?php echo $is_edit ? 'حفظ التغييرات' : 'نشر السجل'; ?>
         </button>
         
-        <a href="<?php echo esc_url(add_query_arg('tab', 'listings', get_permalink())); ?>" class="pt-btn pt-btn-outline pt-btn-lg">
+        <a href="<?php echo esc_url(add_query_arg('tab', 'overview', get_permalink())); ?>" class="pt-btn pt-btn-outline pt-btn-lg">
             إلغاء
         </a>
     </div>
@@ -1062,6 +931,20 @@ $readonly_taxonomies = ['city', 'activity', 'sector', 'economic_activity'];
         </button>
     </div>
 </template>
+
+<!-- Delete Branch Confirmation Modal -->
+<div id="pt-delete-branch-modal" class="pt-confirm-modal" style="display: none;">
+    <div class="pt-confirm-modal-overlay"></div>
+    <div class="pt-confirm-modal-content">
+        <div class="pt-confirm-modal-body">
+            <p class="pt-confirm-modal-message">هل أنت متأكد من الحذف؟</p>
+        </div>
+        <div class="pt-confirm-modal-footer">
+            <button type="button" class="pt-btn pt-btn-primary pt-confirm-ok">حسناً</button>
+            <button type="button" class="pt-btn pt-btn-outline pt-confirm-cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
 
 <!-- Logo Crop Modal -->
 <div id="pt-crop-modal" class="pt-crop-modal" style="display: none;">
